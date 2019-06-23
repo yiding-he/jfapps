@@ -1,20 +1,33 @@
 package com.hyd.jfapps.appbase;
 
-import java.util.HashMap;
-import java.util.Map;
+import javafx.scene.image.Image;
 
-public class AppContext {
+/**
+ * App 用来获取信息或执行操作
+ */
+public interface AppContext {
 
-    public static final String APP_ICON = "AppIcon";
+    /**
+     * 获取 App 自己的图标，如果没有则返回框架图标
+     */
+    Image getIcon();
 
-    private final Map<String, Object> DATA = new HashMap<String, Object>();
+    /**
+     * 保存 App 自己的配置
+     *
+     * @param configName  配置名
+     * @param configValue 配置值
+     */
+    void setConfiguration(String configName, String configValue);
 
-    public void put(String key, Object value) {
-        DATA.put(key, value);
-    }
+    /**
+     * 读取 App 的配置
+     *
+     * @param configName 配置名
+     *
+     * @return 配置值
+     */
+    String getConfiguration(String configName);
 
-    @SuppressWarnings("unchecked")
-    public <T> T get(String key) {
-        return (T) DATA.get(key);
-    }
+
 }

@@ -1,11 +1,9 @@
 package com.hyd.jfapps.launcher.appmanager;
 
-import com.hyd.jfapps.appbase.AppContext;
 import com.hyd.jfapps.appbase.AppInfo;
+import com.hyd.jfapps.appbase.GlobalContext;
 import com.hyd.jfapps.appbase.JfappsApp;
-import com.hyd.jfapps.launcher.AppClassLoader;
-import com.hyd.jfapps.launcher.AppLoadingException;
-import com.hyd.jfapps.launcher.JarScanner;
+import com.hyd.jfapps.launcher.*;
 import javafx.scene.image.Image;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +17,7 @@ import java.util.zip.ZipFile;
 @Slf4j
 public class AppManager {
 
-    public static final AppContext APP_CONTEXT = new AppContext();
+    public static final GlobalContext GLOBAL_CONTEXT = new GlobalContext();
 
     /**
      * App 实例容器对象列表
@@ -70,6 +68,8 @@ public class AppManager {
             ZipEntry logoEntry = zipFile.getEntry("logo.png");
             if (logoEntry != null) {
                 appContainer.setIcon(new Image(zipFile.getInputStream(logoEntry)));
+            } else {
+                appContainer.setIcon(Icons.icon("/logo.png"));
             }
         }
 
@@ -84,6 +84,11 @@ public class AppManager {
         AppClassLoader appClassLoader = appContainer.getAppClassLoader();
         Class<?> jfappsAppClass = appClassLoader.loadClass(appMainClassName);
 
+       ////////////////////////////////////////////////////////////
+
+        appContainer.setConfigFilePath(getConfigFileName(appMainClassName));
+        log.info("Config location: {}", appContainer.getConfigFilePath());
+
         ////////////////////////////////////////////////////////////
 
         AppInfo appInfo = jfappsAppClass.getAnnotation(AppInfo.class);
@@ -96,10 +101,23 @@ public class AppManager {
         ////////////////////////////////////////////////////////////
 
         JfappsApp jfappsApp = (JfappsApp) jfappsAppClass.newInstance();
-        jfappsApp.setAppContext(APP_CONTEXT);
+        jfappsApp.setGlobalContext(GLOBAL_CONTEXT);
         jfappsApp.setClassLoader(appClassLoader);
 
+        AppContextImpl appContext = new AppContextImpl();
+        appContext.setIcon(appContainer.getIcon());
+        appContext.setConfigFilePath(appContainer.getConfigFilePath());
+        appContext.loadProperties();
+        jfappsApp.setAppContext(appContext);
+
+        ////////////////////////////////////////////////////////////
+
+        jfappsApp.initialize();
         appContainer.setAppInstance(jfappsApp);
         APP_CONTAINERS.add(appContainer);
+    }
+
+    private static String getConfigFileName(String appMainClassName) {
+        return System.getProperty("user.home") + "/.jfapps/" + appMainClassName + "/app.properties";
     }
 }

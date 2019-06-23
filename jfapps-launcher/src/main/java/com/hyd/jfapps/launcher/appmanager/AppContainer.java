@@ -20,5 +20,5 @@ public class AppContainer {
 
     private JfappsApp appInstance;
 
-
+    private String configFilePath;
 }
