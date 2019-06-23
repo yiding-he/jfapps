@@ -31,3 +31,5 @@ Java Fx Apps Container
 jfapps-launcher/apps 目录下放了一个简单的例子，在运行 jfapps-launcher 时，框架便会加载并展示这个小工具。
 
 ![java_PsuP18wfNh](https://user-images.githubusercontent.com/900606/59970787-06ed5080-95a1-11e9-83a2-c2b5d54e40a9.png)
+
+![java_44xXuWoOsv](https://user-images.githubusercontent.com/900606/59971497-a9143500-95af-11e9-802f-b5a995a2c81b.png)

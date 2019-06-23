@@ -22,6 +22,7 @@ public class ToolsFxApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Icons.setStageIcon(primaryStage);
+        AppManager.GLOBAL_CONTEXT.put("primaryStage", primaryStage);
 
         TabPane root = new TabPane();
         root.getTabs().add(mainTab(root));
