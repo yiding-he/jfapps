@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.hyd.jfappsdemo.app1.AppController"
+            prefHeight="400.0" prefWidth="600.0">
+
+    <top>
+        <MenuBar>
+            <Menu text="文件(_F)">
+                <MenuItem text="打开(_O)..." onAction="#openFile"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
+        <Label fx:id="lblMessage" text="请打开一个文件"/>
+    </center>
+</BorderPane>

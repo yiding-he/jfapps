@@ -1,8 +1,28 @@
 package com.hyd.jfapps.appbase;
 
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 
-public interface JfappsApp {
+public abstract class JfappsApp {
 
-    Parent getRoot();
+    protected ClassLoader classLoader;
+
+    protected AppContext appContext;
+
+    public void setAppContext(AppContext appContext) {
+        this.appContext = appContext;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    protected FXMLLoader fxmlLoader(String fxmlPath) {
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setClassLoader(classLoader);
+        fxmlLoader.setLocation(getClass().getResource(fxmlPath));
+        return fxmlLoader;
+    }
+
+    public abstract Parent getRoot() throws Exception;
 }

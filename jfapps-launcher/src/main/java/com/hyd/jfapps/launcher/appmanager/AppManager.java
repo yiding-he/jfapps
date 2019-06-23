@@ -1,9 +1,12 @@
 package com.hyd.jfapps.launcher.appmanager;
 
+import com.hyd.jfapps.appbase.AppContext;
+import com.hyd.jfapps.appbase.AppInfo;
 import com.hyd.jfapps.appbase.JfappsApp;
 import com.hyd.jfapps.launcher.AppClassLoader;
 import com.hyd.jfapps.launcher.AppLoadingException;
 import com.hyd.jfapps.launcher.JarScanner;
+import javafx.scene.image.Image;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -15,6 +18,8 @@ import java.util.zip.ZipFile;
 
 @Slf4j
 public class AppManager {
+
+    public static final AppContext APP_CONTEXT = new AppContext();
 
     /**
      * App 实例容器对象列表
@@ -50,27 +55,51 @@ public class AppManager {
     }
 
     private static void loadApp(ClassLoader classLoader, File appFile) throws Exception {
+        AppContainer appContainer = new AppContainer();
+        appContainer.setAppFile(appFile);
+        appContainer.setAppClassLoader(new AppClassLoader(classLoader, appFile));
+
         Properties appProps = new Properties();
 
         try (ZipFile zipFile = new ZipFile(appFile)) {
-            ZipEntry entry = zipFile.getEntry("jfapps.properties");
-            appProps.load(zipFile.getInputStream(entry));
+            ZipEntry propertiesEntry = zipFile.getEntry("jfapps.properties");
+            if (propertiesEntry != null) {
+                appProps.load(zipFile.getInputStream(propertiesEntry));
+            }
+
+            ZipEntry logoEntry = zipFile.getEntry("logo.png");
+            if (logoEntry != null) {
+                appContainer.setIcon(new Image(zipFile.getInputStream(logoEntry)));
+            }
         }
 
         ////////////////////////////////////////////////////////////
 
-        AppContainer appContainer = new AppContainer();
-        appContainer.setAppClassLoader(
-            new AppClassLoader(classLoader, appFile)
-        );
-
         String appMainClassName = appProps.getProperty("app-main-class");
+        if (appMainClassName == null || appMainClassName.trim().length() == 0) {
+            throw new AppLoadingException("App name not found.");
+        }
         log.info("Loading app {}...", appMainClassName);
 
-        Class<?> jfappsAppClass = appContainer.getAppClassLoader().loadClass(appMainClassName);
-        JfappsApp jfappsApp = (JfappsApp) jfappsAppClass.newInstance();
-        appContainer.setAppInstance(jfappsApp);
+        AppClassLoader appClassLoader = appContainer.getAppClassLoader();
+        Class<?> jfappsAppClass = appClassLoader.loadClass(appMainClassName);
 
+        ////////////////////////////////////////////////////////////
+
+        AppInfo appInfo = jfappsAppClass.getAnnotation(AppInfo.class);
+        if (appInfo != null) {
+            appContainer.setAppName(appInfo.name());
+        } else {
+            appContainer.setAppName(jfappsAppClass.getSimpleName());
+        }
+
+        ////////////////////////////////////////////////////////////
+
+        JfappsApp jfappsApp = (JfappsApp) jfappsAppClass.newInstance();
+        jfappsApp.setAppContext(APP_CONTEXT);
+        jfappsApp.setClassLoader(appClassLoader);
+
+        appContainer.setAppInstance(jfappsApp);
         APP_CONTAINERS.add(appContainer);
     }
 }
