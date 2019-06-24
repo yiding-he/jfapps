@@ -87,19 +87,22 @@ public class ToolsFxApplication extends Application {
         }
 
         Tab appTab = createAppTab(container);
-        tabPane.getTabs().add(appTab);
-        tabPane.getSelectionModel().select(appTab);
+        if (appTab != null) {
+            tabPane.getTabs().add(appTab);
+            tabPane.getSelectionModel().select(appTab);
+        }
     }
 
     private Tab createAppTab(AppContainer appContainer) {
-        Parent root = null;
-        JfappsApp app = appContainer.getAppInstance();
+        Parent root;
 
         try {
+            JfappsApp app = appContainer.getOrCreateAppInstance();
             root = app.getRoot();
         } catch (Exception e) {
             log.error("", e);
             new Alert(Alert.AlertType.ERROR, e.toString(), ButtonType.OK).showAndWait();
+            return null;
         }
 
         Tab tab = new Tab();
@@ -107,6 +110,13 @@ public class ToolsFxApplication extends Application {
         tab.setGraphic(Icons.iconView(appContainer.getIcon(), 16));
         tab.setText(appContainer.getAppName());
         tab.setContent(root);
+        tab.setOnCloseRequest(event -> {
+            JfappsApp appInstance = appContainer.getAppInstance();
+            if (appInstance != null) {
+                appInstance.onCloseRequest();
+            }
+        });
+        tab.setOnClosed(event -> AppManager.appClosed(appContainer));
         return tab;
     }
 
