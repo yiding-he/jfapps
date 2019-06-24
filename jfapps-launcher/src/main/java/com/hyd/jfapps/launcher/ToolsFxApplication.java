@@ -3,32 +3,44 @@ package com.hyd.jfapps.launcher;
 import com.hyd.jfapps.appbase.JfappsApp;
 import com.hyd.jfapps.launcher.appmanager.AppContainer;
 import com.hyd.jfapps.launcher.appmanager.AppManager;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.layout.FlowPane;
-import javafx.stage.Stage;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.List;
 import java.util.Objects;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.FlowPane;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ToolsFxApplication extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         Icons.setStageIcon(primaryStage);
         AppManager.GLOBAL_CONTEXT.put("primaryStage", primaryStage);
 
         TabPane root = new TabPane();
         root.getTabs().add(mainTab(root));
 
-        primaryStage.setTitle("Hydrogen Tools Fx");
-        primaryStage.setScene(new Scene(root, 400, 300));
+        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        double width = Math.max(visualBounds.getWidth() - 200, 1000);
+        double height = Math.max(visualBounds.getHeight() - 200, 600);
+
+        primaryStage.setTitle("小工具集合");
+        primaryStage.setScene(new Scene(root, width, height));
+        primaryStage.setX(visualBounds.getMinX() + (visualBounds.getWidth() - width) / 2);
+        primaryStage.setY(visualBounds.getMinY() + (visualBounds.getHeight() - height) / 2);
+
         primaryStage.show();
     }
 
