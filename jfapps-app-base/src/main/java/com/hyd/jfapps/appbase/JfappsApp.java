@@ -30,7 +30,24 @@ public abstract class JfappsApp {
         return fxmlLoader;
     }
 
+    //////////////////////////////////////////////////////////////
+
+    public String getAppName() {
+        AppInfo appInfo = getClass().getAnnotation(AppInfo.class);
+        if (appInfo == null) {
+            return getClass().getSimpleName();
+        } else {
+            return appInfo.name();
+        }
+    }
+
+    //////////////////////////////////////////////////////////////
+
     public void initialize() {
+
+    }
+
+    public void onCloseRequest() {
 
     }
 
