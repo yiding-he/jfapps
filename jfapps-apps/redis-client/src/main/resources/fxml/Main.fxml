@@ -1,0 +1,66 @@
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import java.net.URL?>
+<BorderPane fx:controller="com.hyd.redisfx.controllers.MainController" xmlns:fx="javafx">
+
+    <stylesheets>
+        <URL value="@/css/style.css" />
+    </stylesheets>
+
+    <top>
+        <MenuBar>
+            <Menu text="%mnu_connections">
+                <MenuItem text="%mnu_connections_choose" onAction="#openConnectionManager"/>
+            </Menu>
+            <Menu text="%mnu_databases">
+                <MenuItem text="%mnu_change_database" onAction="#changeDatabaseClicked"/>
+                <MenuItem text="%mnu_switch_database" onAction="#switchDatabaseClicked" disable="true"/>
+                <SeparatorMenuItem/>
+                <MenuItem text="%mnu_clear_database" onAction="#clearDatabaseClicked" disable="true"/>
+            </Menu>
+        </MenuBar>
+    </top>
+    <center>
+        <TabPane fx:id="tabs" visible="false">
+            <Tab closable="false" text="%tab_title_key" userData="Key">
+                <fx:include source="tabs/KeyTab.fxml"/>
+            </Tab>
+            <Tab closable="false" text="%tab_title_string" userData="String">
+                <fx:include source="tabs/StringTab.fxml"/>
+            </Tab>
+            <Tab closable="false" text="%tab_title_list" userData="List">
+                <fx:include source="tabs/ListTab.fxml"/>
+            </Tab>
+            <Tab closable="false" text="%tab_title_hash" userData="Hash">
+                <fx:include source="tabs/HashTab.fxml"/>
+            </Tab>
+            <Tab closable="false" text="%tab_title_set" userData="Set">
+                <fx:include source="tabs/SetTab.fxml"/>
+            </Tab>
+            <Tab closable="false" text="%tab_title_zset" userData="ZSet">
+                <BorderPane>
+                    <center>
+                        <Label text="Not implemented yet."/>
+                    </center>
+                </BorderPane>
+            </Tab>
+            <Tab closable="false" text="%tab_title_geo" userData="Geo">
+                <BorderPane>
+                    <center>
+                        <Label text="Not implemented yet."/>
+                    </center>
+                </BorderPane>
+            </Tab>
+            <Tab closable="false" text="%tab_title_pubsub" userData="PubSub">
+                <BorderPane>
+                    <center>
+                        <Label text="Not implemented yet."/>
+                    </center>
+                </BorderPane>
+            </Tab>
+            <Tab closable="false" text="%tab_title_config" userData="Config">
+                <fx:include source="tabs/ConfigTab.fxml"/>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>

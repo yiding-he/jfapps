@@ -1,0 +1,43 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="javafx" fx:controller="com.hyd.redisfx.controllers.tabs.HashTabController">
+    <center>
+        <VBox spacing="10">
+
+            <padding>
+                <Insets bottom="10" left="10" right="10" top="10"/>
+            </padding>
+
+            <HBox spacing="10" alignment="BASELINE_LEFT">
+                <Label text="Key:"/>
+                <TextField fx:id="txtKey" HBox.hgrow="ALWAYS"/>
+                <Button onAction="#showValue" styleClass="iconButton"/>
+            </HBox>
+
+            <TableView fx:id="tblHashValues" VBox.vgrow="ALWAYS" style="-fx-font-family: monospace">
+                <columns>
+                    <TableColumn fx:id="colHashKey" text="%word_key" prefWidth="200"/>
+                    <TableColumn fx:id="colHashValue" text="%word_value" prefWidth="200"/>
+                </columns>
+                <contextMenu>
+                    <ContextMenu fx:id="mnuHashValues">
+                        <items>
+                            <MenuItem text="%hash_op_edit_item" onAction="#mnuEditHashValue"/>
+                            <MenuItem text="%hash_op_delete_item" onAction="#mnuDeleteHashValue"/>
+                            <MenuItem text="%hash_op_copy_key" onAction="#mnuCopyHashKey" accelerator="Shortcut+C"/>
+                            <MenuItem text="%hash_op_copy_value" onAction="#mnuCopyHashValue" accelerator="Shortcut+B"/>
+                        </items>
+                    </ContextMenu>
+                </contextMenu>
+            </TableView>
+
+            <HBox spacing="10" alignment="BASELINE_LEFT">
+                <TextField fx:id="txtHashFieldPattern"/>
+                <Button text="%word_search" styleClass="narrowButton" onAction="#searchFieldPattern"/>
+                <Label text="0" fx:id="lblHashSize"/>
+                <Button text="%hash_op_add_value" onAction="#addValue"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

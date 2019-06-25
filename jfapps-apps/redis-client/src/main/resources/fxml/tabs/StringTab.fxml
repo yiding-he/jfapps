@@ -1,0 +1,44 @@
+<?import com.hyd.redisfx.nodes.DoubleSpinner?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<SplitPane orientation="VERTICAL" dividerPositions="0.7"
+           fx:controller="com.hyd.redisfx.controllers.tabs.StringTabController" xmlns:fx="javafx">
+    <VBox spacing="10">
+
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10"/>
+        </padding>
+
+        <HBox alignment="BASELINE_LEFT" spacing="10">
+            <Label text="Key:"/>
+            <TextField fx:id="txtKey" HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <Label fx:id="lblMessage" text="Value:"/>
+
+        <TextArea fx:id="txtValue" VBox.vgrow="ALWAYS" wrapText="true" style="-fx-font-family: monospace"/>
+
+        <HBox spacing="5" alignment="BASELINE_LEFT">
+            <Button text="%op_save" onAction="#saveKey"/>
+            <Button text="%op_delete" onAction="#deleteKey"/>
+            <Label fx:id="lblLength"/>
+        </HBox>
+
+    </VBox>
+    <TabPane>
+        <Tab text="INCR/DECR" closable="false">
+            <HBox alignment="BASELINE_LEFT" spacing="10">
+
+                <padding>
+                    <Insets bottom="10" left="10" right="10" top="10"/>
+                </padding>
+
+                <DoubleSpinner fx:id="spnIncrement" prefWidth="100"/>
+                <Button text="%op_increase" onAction="#increment"/>
+                <DoubleSpinner fx:id="spnDecrement" prefWidth="100"/>
+                <Button text="%op_decrease" onAction="#decrement"/>
+            </HBox>
+        </Tab>
+    </TabPane>
+</SplitPane>

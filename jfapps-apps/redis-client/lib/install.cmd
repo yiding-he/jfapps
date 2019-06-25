@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=jedis-2.10.2-PROXY.jar -DgroupId=redis.clients -DartifactId=jedis -Dversion=2.10.2-PROXY -Dpackaging=jar
