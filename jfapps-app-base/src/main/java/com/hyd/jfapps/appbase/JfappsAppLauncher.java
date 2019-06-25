@@ -1,13 +1,15 @@
 package com.hyd.jfapps.appbase;
 
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 用于帮助 JfappsApp 类调试运行的启动类
@@ -23,8 +25,11 @@ public class JfappsAppLauncher extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        AppContextStub appContext = new AppContextStub();
+        appContext.hostServices = getHostServices();
+
         JfappsApp app = appClass.newInstance();
-        app.setAppContext(new AppContextStub());
+        app.setAppContext(appContext);
         app.setClassLoader(JfappsAppLauncher.class.getClassLoader());
         app.setGlobalContext(new GlobalContext());
 
@@ -45,6 +50,13 @@ public class JfappsAppLauncher extends Application {
     private static class AppContextStub implements AppContext {
 
         private Map<String, String> config = new HashMap<>();
+
+        private HostServices hostServices;
+
+        @Override
+        public HostServices getHostServices() {
+            return hostServices;
+        }
 
         @Override
         public Image getIcon() {

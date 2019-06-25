@@ -1,5 +1,6 @@
 package com.hyd.jfapps.appbase;
 
+import javafx.application.HostServices;
 import javafx.scene.image.Image;
 
 /**
@@ -30,4 +31,8 @@ public interface AppContext {
     String getConfiguration(String configName);
 
 
+    /**
+     * 获得 HostServices 对象
+     */
+    HostServices getHostServices();
 }
