@@ -123,6 +123,7 @@ public class AppContainer {
         return appInstance;
     }
 
+    // 初始化 App 实例，准备 AppContext 对象，执行 initialize() 方法
     public void initApp() throws Exception {
 
         if (appFile == null) {
@@ -135,8 +136,6 @@ public class AppContainer {
 
         //////////////////////////////////////////////////////////////
 
-        log.info("Initializing app {}...", appFile.getName());
-
         configFilePath = getConfigFileName(jfappsClassName);
 
         appInstance = jfappsClass.newInstance();
@@ -144,13 +143,16 @@ public class AppContainer {
         appInstance.setClassLoader(appClassLoader);
 
         AppContextImpl appContext = new AppContextImpl();
-        appContext.setHostServices(ToolsFxApplication::getHServices);
+        appContext.setPrimaryStage(ToolsFxApplication.primaryStage);
+        appContext.setHostServices(ToolsFxApplication.hostServices);
         appContext.setIcon(icon);
         appContext.setConfigFilePath(configFilePath);
         appContext.loadProperties();
         appInstance.setAppContext(appContext);
 
-        appInstance.initialize();
+        if (appInstance.getOnInitialized() != null) {
+            appInstance.getOnInitialized().run();
+        }
     }
 
     public void closeApp() {

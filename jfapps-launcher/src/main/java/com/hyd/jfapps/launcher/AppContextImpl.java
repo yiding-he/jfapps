@@ -3,6 +3,7 @@ package com.hyd.jfapps.launcher;
 import com.hyd.jfapps.appbase.AppContext;
 import javafx.application.HostServices;
 import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -12,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
-import java.util.function.Supplier;
 
 @Slf4j
 public class AppContextImpl implements AppContext {
@@ -23,15 +23,26 @@ public class AppContextImpl implements AppContext {
 
     private Properties appProperties = new Properties();
 
-    private Supplier<HostServices> hostServices;
+    private HostServices hostServices;
 
-    public void setHostServices(Supplier<HostServices> hostServices) {
+    private Stage primaryStage;
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
+    @Override
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public void setHostServices(HostServices hostServices) {
         this.hostServices = hostServices;
     }
 
     @Override
     public HostServices getHostServices() {
-        return hostServices.get();
+        return hostServices;
     }
 
     public void setIcon(Image icon) {

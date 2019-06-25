@@ -27,13 +27,16 @@ public class JfappsAppLauncher extends Application {
     public void start(Stage primaryStage) throws Exception {
         AppContextStub appContext = new AppContextStub();
         appContext.hostServices = getHostServices();
+        appContext.primaryStage = primaryStage;
 
         JfappsApp app = appClass.newInstance();
         app.setAppContext(appContext);
         app.setClassLoader(JfappsAppLauncher.class.getClassLoader());
         app.setGlobalContext(new GlobalContext());
 
-        app.initialize();
+        if (app.getOnInitialized() != null) {
+            app.getOnInitialized().run();
+        }
 
         InputStream logo = JfappsAppLauncher.class.getResourceAsStream("/logo.png");
         if (logo != null) {
@@ -42,6 +45,19 @@ public class JfappsAppLauncher extends Application {
 
         primaryStage.setTitle(app.getAppName());
         primaryStage.setScene(new Scene(app.getRoot()));
+
+        primaryStage.setOnShown(event -> {
+            if (app.getOnShown() != null) {
+                app.getOnShown().run();
+            }
+        });
+
+        primaryStage.setOnCloseRequest(event -> {
+            if (app.getOnCloseRequest() != null) {
+                app.getOnCloseRequest().run();
+            }
+        });
+
         primaryStage.show();
     }
 
@@ -52,6 +68,17 @@ public class JfappsAppLauncher extends Application {
         private Map<String, String> config = new HashMap<>();
 
         private HostServices hostServices;
+
+        private Stage primaryStage;
+
+        @Override
+        public Stage getPrimaryStage() {
+            return primaryStage;
+        }
+
+        public void setPrimaryStage(Stage primaryStage) {
+            this.primaryStage = primaryStage;
+        }
 
         @Override
         public HostServices getHostServices() {

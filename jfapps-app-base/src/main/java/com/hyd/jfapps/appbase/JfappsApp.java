@@ -43,13 +43,40 @@ public abstract class JfappsApp {
 
     //////////////////////////////////////////////////////////////
 
-    public void initialize() {
+    // 用于初始化数据，此时界面尚未展示，不能操作界面元素
+    private Runnable onInitialized;
 
+    // 用于初始化界面
+    private Runnable onShown;
+
+    // 当 App 要关闭时
+    private Runnable onCloseRequest;
+
+    public Runnable getOnInitialized() {
+        return onInitialized;
     }
 
-    public void onCloseRequest() {
-
+    public void setOnInitialized(Runnable onInitialized) {
+        this.onInitialized = onInitialized;
     }
+
+    public Runnable getOnShown() {
+        return onShown;
+    }
+
+    public void setOnShown(Runnable onShown) {
+        this.onShown = onShown;
+    }
+
+    public Runnable getOnCloseRequest() {
+        return onCloseRequest;
+    }
+
+    public void setOnCloseRequest(Runnable onCloseRequest) {
+        this.onCloseRequest = onCloseRequest;
+    }
+
+    ///////////////////////////////////////////////////////////////
 
     public abstract Parent getRoot() throws Exception;
 }

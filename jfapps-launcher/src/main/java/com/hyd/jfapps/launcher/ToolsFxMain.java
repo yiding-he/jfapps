@@ -10,8 +10,6 @@ public class ToolsFxMain {
 
     public static void main(String[] args) throws Exception {
         AppManager.GLOBAL_CONTEXT.put(GlobalContext.APP_ICON, Icons.icon("/logo.png"));
-        AppManager.init();
-
         Application.launch(ToolsFxApplication.class, args);
     }
 }

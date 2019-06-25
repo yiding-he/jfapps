@@ -2,6 +2,7 @@ package com.hyd.jfapps.appbase;
 
 import javafx.application.HostServices;
 import javafx.scene.image.Image;
+import javafx.stage.Stage;
 
 /**
  * App 用来获取信息或执行操作
@@ -30,6 +31,10 @@ public interface AppContext {
      */
     String getConfiguration(String configName);
 
+    /**
+     * 获得主窗体
+     */
+    Stage getPrimaryStage();
 
     /**
      * 获得 HostServices 对象

@@ -26,18 +26,18 @@ import java.util.Objects;
 @Slf4j
 public class ToolsFxApplication extends Application {
 
-    private static HostServices hostServices;
+    public static HostServices hostServices;
 
-    public static HostServices getHServices() {
-        return hostServices;
-    }
+    public static Stage primaryStage;
+
+    private TabPane tabPane;
 
     @Override
     public void start(Stage primaryStage) {
         ToolsFxApplication.hostServices = getHostServices();
+        ToolsFxApplication.primaryStage = primaryStage;
 
         Icons.setStageIcon(primaryStage);
-        AppManager.GLOBAL_CONTEXT.put("primaryStage", primaryStage);
 
         Parent root = createRoot();
         Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
@@ -49,6 +49,10 @@ public class ToolsFxApplication extends Application {
         primaryStage.setX(visualBounds.getMinX() + (visualBounds.getWidth() - width) / 2);
         primaryStage.setY(visualBounds.getMinY() + (visualBounds.getHeight() - height) / 2);
 
+        primaryStage.setOnShown(event -> {
+            AppManager.init();
+            tabPane.getTabs().add(mainTab(tabPane));
+        });
         primaryStage.show();
     }
 
@@ -76,8 +80,7 @@ public class ToolsFxApplication extends Application {
     }
 
     private TabPane mainTabPane() {
-        TabPane tabPane = new TabPane();
-        tabPane.getTabs().add(mainTab(tabPane));
+        tabPane = new TabPane();
         return tabPane;
     }
 
@@ -144,7 +147,7 @@ public class ToolsFxApplication extends Application {
             menuItem.setText("作者：" + container.getAppInfo().author());
             menuItem.setOnAction(event -> {
                 String url = container.getAppInfo().url();
-                getHServices().showDocument(url);
+                hostServices.showDocument(url);
             });
             button.getItems().add(menuItem);
         }
@@ -164,6 +167,10 @@ public class ToolsFxApplication extends Application {
         if (appTab != null) {
             tabPane.getTabs().add(appTab);
             tabPane.getSelectionModel().select(appTab);
+
+            if (container.getAppInstance().getOnShown() != null) {
+                container.getAppInstance().getOnShown().run();
+            }
         }
     }
 
@@ -184,13 +191,22 @@ public class ToolsFxApplication extends Application {
         tab.setGraphic(Icons.iconView(appContainer.getIcon(), 16));
         tab.setText(appContainer.getAppName());
         tab.setContent(root);
+
         tab.setOnCloseRequest(event -> {
-            JfappsApp appInstance = appContainer.getAppInstance();
-            if (appInstance != null) {
-                appInstance.onCloseRequest();
+            Tab _tab = (Tab) event.getSource();
+            AppContainer _appContainer = (AppContainer) _tab.getUserData();
+            JfappsApp appInstance = _appContainer.getAppInstance();
+            if (appInstance != null && appInstance.getOnCloseRequest() != null) {
+                appInstance.getOnCloseRequest().run();
             }
         });
-        tab.setOnClosed(event -> AppManager.appClosed(appContainer));
+
+        tab.setOnClosed(event -> {
+            Tab _tab = (Tab) event.getSource();
+            AppContainer _appContainer = (AppContainer) _tab.getUserData();
+            AppManager.appClosed(_appContainer);
+        });
+
         return tab;
     }
 
