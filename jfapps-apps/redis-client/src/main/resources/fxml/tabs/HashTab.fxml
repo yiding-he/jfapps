@@ -12,7 +12,7 @@
             <HBox spacing="10" alignment="BASELINE_LEFT">
                 <Label text="Key:"/>
                 <TextField fx:id="txtKey" HBox.hgrow="ALWAYS"/>
-                <Button onAction="#showValue" styleClass="iconButton"/>
+                <Button onAction="#showValue" text="打开" styleClass="iconButton"/>
             </HBox>
 
             <TableView fx:id="tblHashValues" VBox.vgrow="ALWAYS" style="-fx-font-family: monospace">

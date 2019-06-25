@@ -18,7 +18,7 @@
             <Spinner fx:id="spnFromIndex" prefWidth="80" editable="true"/>
             <Label text="%list_lbl_to"/>
             <Spinner fx:id="spnToIndex" prefWidth="80" editable="true"/>
-            <Button onAction="#listValues" styleClass="iconButton"/>
+            <Button onAction="#listValues" text="打开" styleClass="iconButton"/>
         </HBox>
 
         <Label fx:id="lblMessage" text="Value:"/>

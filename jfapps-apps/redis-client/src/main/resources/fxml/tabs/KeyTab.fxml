@@ -25,7 +25,7 @@
             </FXCollections>
           </items>
         </ComboBox>
-        <Button onAction="#listKeys" styleClass="iconButton"/>
+        <Button onAction="#listKeys" text="搜索" styleClass="iconButton"/>
       </HBox>
 
       <TableView fx:id="tblKeys" VBox.vgrow="ALWAYS" style="-fx-font-family: monospace">
