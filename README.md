@@ -20,7 +20,8 @@ Java Fx Apps Container
 
 1. 添加 jfapps-app-base 依赖；
 2. 实现 com.hyd.jfapps.appbase.JfappsApp 的子类。实现这个类很简单，只需要实现 getRoot() 方法返回一个 Parent 对象即可。
-3. （可选）通过在 reources 目录下添加 logo.png 来自定义小工具的图标。
+3. 在 resources 目录下创建 jfapps.properties，内容参考示例项目。
+4. （可选）通过在 reources 目录下添加 logo.png 来自定义小工具的图标。
 
 ## 小工具是如何加载的
 
@@ -30,6 +31,13 @@ Java Fx Apps Container
 
 jfapps-launcher/apps 目录下放了一个简单的例子，在运行 jfapps-launcher 时，框架便会加载并展示这个小工具。
 
-![java_PsuP18wfNh](https://user-images.githubusercontent.com/900606/59970787-06ed5080-95a1-11e9-83a2-c2b5d54e40a9.png)
+![java_9BXgT662jm](https://user-images.githubusercontent.com/900606/60070187-5326c500-9748-11e9-8efd-172259d424db.png)
 
-![java_44xXuWoOsv](https://user-images.githubusercontent.com/900606/59971497-a9143500-95af-11e9-802f-b5a995a2c81b.png)
+![java_FJiGn4baro](https://user-images.githubusercontent.com/900606/60070188-5326c500-9748-11e9-8ac4-be51d6e5ae5f.png)
+
+![java_Q3wLbXALZ9](https://user-images.githubusercontent.com/900606/60070189-53bf5b80-9748-11e9-9b55-8c22883d7602.png)
+
+## 尚未完成的工作
+
+1. 根据名称搜索小工具；
+2. 小工具分类展示。
