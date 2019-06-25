@@ -53,7 +53,9 @@ public class ToolsFxApplication extends Application {
             AppManager.init();
             tabPane.getTabs().add(mainTab(tabPane));
         });
+
         primaryStage.show();
+        System.out.println("__OK__");
     }
 
     private Parent createRoot() {
