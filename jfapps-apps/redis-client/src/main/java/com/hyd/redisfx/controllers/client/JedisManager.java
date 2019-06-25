@@ -79,7 +79,9 @@ public class JedisManager {
     }
 
     public static void shutdown() {
-        jedisPool.destroy();
+        if (jedisPool != null) {
+            jedisPool.destroy();
+        }
     }
 
     public static String getHost() {

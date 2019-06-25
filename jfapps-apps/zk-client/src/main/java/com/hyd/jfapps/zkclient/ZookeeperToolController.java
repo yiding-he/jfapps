@@ -3,6 +3,7 @@ package com.hyd.jfapps.zkclient;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.MouseButton;
@@ -24,6 +25,9 @@ import java.util.ResourceBundle;
 @Setter
 @Slf4j
 public class ZookeeperToolController extends ZookeeperToolView {
+
+    public Label lblStatus;
+
     private ZookeeperToolService zookeeperToolService = new ZookeeperToolService(this);
 
     @Override
@@ -103,17 +107,20 @@ public class ZookeeperToolController extends ZookeeperToolView {
 
     @FXML
     private void connectOnAction(ActionEvent event) {
-        zookeeperToolService.connectOnAction();
+        connectButton.setDisable(true);
+
+        zookeeperToolService.connect(
+            zkServersTextField.getText().trim(),
+            connectionTimeoutSpinner.getValue(),
+            () -> {},
+            e -> AlertDialog.error("连接失败", e),
+            () -> connectButton.setDisable(false)
+        );
     }
 
     @FXML
     private void disconnectOnAction(ActionEvent event) {
         zookeeperToolService.disconnectOnAction();
-    }
-
-    @FXML
-    private void refreshOnAction(ActionEvent event) {
-        zookeeperToolService.refreshOnAction();
     }
 
     @FXML

@@ -1,5 +1,6 @@
 package com.hyd.jfapps.zkclient;
 
+import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,11 +16,12 @@ import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @ClassName: ZookeeperToolService
@@ -33,78 +35,91 @@ import java.util.Map;
 @Slf4j
 public class ZookeeperToolService {
 
-    public ZookeeperToolController zookeeperToolController;
+    public ZookeeperToolController controller;
 
-    ZkClient zkClient = null;
+    private ZkClient zkClient = null;
 
     private Map<String, IZkChildListener> childListeners = new HashMap<>();
 
     private Map<String, IZkDataListener> dataListeners = new HashMap<>();
 
-    public ZookeeperToolService(ZookeeperToolController zookeeperToolController) {
-        this.zookeeperToolController = zookeeperToolController;
+    public ZookeeperToolService(ZookeeperToolController controller) {
+        this.controller = controller;
     }
 
-    public void connectOnAction() {
-        if (zkClient == null) {
+    private void setStatus(String status) {
+        Platform.runLater(() -> this.controller.lblStatus.setText(status));
+    }
+
+    private static void runBackground(
+        Runnable task, Runnable onSuccess, Consumer<Throwable> onFail, Runnable onFinish) {
+
+        Thread thread = new Thread(() -> {
             try {
-                zkClient = new ZkClient(zookeeperToolController.getZkServersTextField().getText().trim(), zookeeperToolController.getConnectionTimeoutSpinner().getValue());
-            } catch (Exception e) {
-                AlertDialog.error("连接失败", e);
-                zkClient = null;
+                task.run();
+                if (onSuccess != null) {
+                    onSuccess.run();
+                }
+            } catch (Throwable e) {
+                if (onFail != null) {
+                    onFail.accept(e);
+                }
+            } finally {
+                if (onFinish != null) {
+                    onFinish.run();
+                }
             }
-            zkClient.setZkSerializer(new ZkSerializer() {
-                @Override
-                public byte[] serialize(Object data) throws ZkMarshallingError {
-                    try {
-                        return String.valueOf(data).getBytes("utf-8");
-                    } catch (UnsupportedEncodingException var3) {
-                        throw new ZkMarshallingError(var3.getMessage());
-                    }
-                }
+        });
 
-                @Override
-                public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-                    try {
-                        return new String(bytes, "utf-8");
-                    } catch (UnsupportedEncodingException e) {
-                        throw new ZkMarshallingError(e.getMessage());
-                    }
-                }
-            });
-//            zkClient.subscribeStateChanges(new IZkStateListener() {
-//                @Override
-//                public void handleStateChanged(Watcher.Event.KeeperState state) throws Exception {
-//                    log.info("连接状态", state);
-//                }
-//
-//                @Override
-//                public void handleNewSession() throws Exception {
-//                    log.info("handleNewSession");
-//                }
-//
-//                @Override
-//                public void handleSessionEstablishmentError(Throwable error) throws Exception {
-//                    log.warn("handleSessionEstablishmentError:", error);
-//                }
-//            });
-        }
-        zookeeperToolController.getNodeTreeView().getRoot().getChildren().clear();
-        this.addNodeTree("/", zookeeperToolController.getNodeTreeView().getRoot());
-        zookeeperToolController.getNodeTreeView().getRoot().setExpanded(true);
+        thread.setDaemon(true);
+        thread.start();
     }
 
-    private void addNodeTree(String path, TreeItem<String> treeItem) {
+    public void connect(
+        String serverAddress, int timeoutMillis,
+        Runnable onSuccess, Consumer<Throwable> onFail, Runnable onFinish) {
+
+        if (zkClient != null) {
+            zkClient.close();
+        }
+
+        runBackground(
+            () -> {
+                try {
+                    setStatus("Connecting...");
+                    zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
+                    setStatus("Connected.");
+                    Platform.runLater(ZookeeperToolService.this::buildNodeTree);
+                } catch (Throwable e) {
+                    AlertDialog.error("连接失败", e);
+                }
+            },
+            onSuccess, onFail, onFinish
+        );
+    }
+
+    private void buildNodeTree() {
+        TreeItem<String> root = controller.getNodeTreeView().getRoot();
+        root.getChildren().clear();
+        runBackground(
+            () -> this.addNodeTree("/", root),
+            () -> Platform.runLater(() -> root.setExpanded(true)),
+            e -> AlertDialog.error("", e),
+            null
+        );
+    }
+
+    private void addNodeTree(String path, TreeItem<String> parent) {
         List<String> list = zkClient.getChildren(path);
         for (String name : list) {
-            TreeItem<String> treeItem2 = new TreeItem<>(name);
-            treeItem.getChildren().add(treeItem2);
-            this.addNodeTree(StringUtils.appendIfMissing(path, "/", "/") + name, treeItem2);
+            TreeItem<String> child = new TreeItem<>(name);
+            Platform.runLater(() -> parent.getChildren().add(child));
+            addNodeTree(StringUtils.appendIfMissing(path, "/", "/") + name, child);
         }
     }
 
     private String getNodePath(TreeItem<String> selectedItem) {
-        StringBuffer stringBuffer = new StringBuffer();
+        StringBuilder stringBuffer = new StringBuilder();
         stringBuffer.append(selectedItem.getValue());
         TreeItem<String> indexItem = selectedItem.getParent();
         while (indexItem != null) {
@@ -120,26 +135,26 @@ public class ZookeeperToolService {
             AlertDialog.error("节点不存在", "节点 '" + nodePath + "' 不存在");
             return;
         }
-        zookeeperToolController.getNodeDataValueTextArea().setText(zkClient.readData(nodePath));
+        controller.getNodeDataValueTextArea().setText(zkClient.readData(nodePath));
         Map.Entry<List<ACL>, Stat> aclsEntry = zkClient.getAcl(nodePath);
         Stat stat = aclsEntry.getValue();
-        zookeeperToolController.getA_VERSIONTextField().setText("" + stat.getAversion());
-        zookeeperToolController.getC_TIMETextField().setText(DateFormatUtils.format(stat.getCtime(), "yyyy-MM-dd'T'HH:mm:ss.SSS z"));
-        zookeeperToolController.getC_VERSIONTextField().setText("" + stat.getCversion());
-        zookeeperToolController.getCZXIDTextField().setText("0x" + Long.toHexString(stat.getCzxid()));
-        zookeeperToolController.getDATA_LENGTHTextField().setText("" + stat.getDataLength());
-        zookeeperToolController.getEPHEMERAL_OWNERTextField().setText("0x" + Long.toHexString(stat.getEphemeralOwner()));
-        zookeeperToolController.getM_TIMETextField().setText(DateFormatUtils.format(stat.getMtime(), "yyyy-MM-dd'T'HH:mm:ss.SSS z"));
-        zookeeperToolController.getMZXIDTextField().setText("0x" + Long.toHexString(stat.getMzxid()));
-        zookeeperToolController.getNUM_CHILDRENTextField().setText("" + stat.getNumChildren());
-        zookeeperToolController.getPZXIDTextField().setText("0x" + Long.toHexString(stat.getPzxid()));
-        zookeeperToolController.getVERSIONTextField().setText("" + stat.getVersion());
+        controller.getA_VERSIONTextField().setText("" + stat.getAversion());
+        controller.getC_TIMETextField().setText(DateFormatUtils.format(stat.getCtime(), "yyyy-MM-dd'T'HH:mm:ss.SSS z"));
+        controller.getC_VERSIONTextField().setText("" + stat.getCversion());
+        controller.getCZXIDTextField().setText("0x" + Long.toHexString(stat.getCzxid()));
+        controller.getDATA_LENGTHTextField().setText("" + stat.getDataLength());
+        controller.getEPHEMERAL_OWNERTextField().setText("0x" + Long.toHexString(stat.getEphemeralOwner()));
+        controller.getM_TIMETextField().setText(DateFormatUtils.format(stat.getMtime(), "yyyy-MM-dd'T'HH:mm:ss.SSS z"));
+        controller.getMZXIDTextField().setText("0x" + Long.toHexString(stat.getMzxid()));
+        controller.getNUM_CHILDRENTextField().setText("" + stat.getNumChildren());
+        controller.getPZXIDTextField().setText("0x" + Long.toHexString(stat.getPzxid()));
+        controller.getVERSIONTextField().setText("" + stat.getVersion());
 
         List<ACL> acls = aclsEntry.getKey();
         for (ACL acl : acls) {
             Map<String, String> aclMap = new LinkedHashMap<String, String>();
-            zookeeperToolController.getAclSchemeTextField().setText(acl.getId().getScheme());
-            zookeeperToolController.getAclIdTextField().setText(acl.getId().getId());
+            controller.getAclSchemeTextField().setText(acl.getId().getScheme());
+            controller.getAclIdTextField().setText(acl.getId().getId());
             StringBuilder sb = new StringBuilder();
             int perms = acl.getPerms();
             if ((perms & Perms.READ) == Perms.READ) {
@@ -157,7 +172,7 @@ public class ZookeeperToolService {
             if ((perms & Perms.ADMIN) == Perms.ADMIN) {
                 sb.append(", Admin");
             }
-            zookeeperToolController.getAclPermissionsTextField().setText(sb.toString());
+            controller.getAclPermissionsTextField().setText(sb.toString());
         }
     }
 
@@ -166,19 +181,11 @@ public class ZookeeperToolService {
             zkClient.close();
             zkClient = null;
         }
-        zookeeperToolController.getNodeTreeView().getRoot().getChildren().clear();
-    }
-
-    public void refreshOnAction() {
-        if (zkClient == null) {
-            AlertDialog.error("zookeeper未连接");
-            return;
-        }
-        connectOnAction();
+        controller.getNodeTreeView().getRoot().getChildren().clear();
     }
 
     public void deleteNodeOnAction() {
-        TreeItem<String> selectedItem = zookeeperToolController.getNodeTreeView().getSelectionModel().getSelectedItem();
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             AlertDialog.error("未选中节点");
             return;
@@ -189,7 +196,7 @@ public class ZookeeperToolService {
     }
 
     public void addNodeOnAction() {
-        TreeItem<String> selectedItem = zookeeperToolController.getNodeTreeView().getSelectionModel().getSelectedItem();
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             AlertDialog.error("未选中节点");
             return;
@@ -206,7 +213,7 @@ public class ZookeeperToolService {
     }
 
     public void renameNodeOnAction(boolean isCopy) {
-        TreeItem<String> selectedItem = zookeeperToolController.getNodeTreeView().getSelectionModel().getSelectedItem();
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             AlertDialog.error("未选中节点");
             return;
@@ -239,17 +246,17 @@ public class ZookeeperToolService {
     }
 
     public void nodeDataSaveOnAction() {
-        TreeItem<String> selectedItem = zookeeperToolController.getNodeTreeView().getSelectionModel().getSelectedItem();
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             AlertDialog.error("未选中节点");
             return;
         }
         String nodePath = this.getNodePath(selectedItem);
-        zkClient.writeData(nodePath, zookeeperToolController.getNodeDataValueTextArea().getText());
+        zkClient.writeData(nodePath, controller.getNodeDataValueTextArea().getText());
     }
 
     public void addNodeNotify() {//添加节点通知
-        TreeItem<String> selectedItem = zookeeperToolController.getNodeTreeView().getSelectionModel().getSelectedItem();
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             AlertDialog.error("未选中节点");
             return;
@@ -279,7 +286,7 @@ public class ZookeeperToolService {
     }
 
     public void removeNodeNotify() {//移除节点通知
-        TreeItem<String> selectedItem = zookeeperToolController.getNodeTreeView().getSelectionModel().getSelectedItem();
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             AlertDialog.error("未选中节点");
             return;
@@ -288,5 +295,18 @@ public class ZookeeperToolService {
         zkClient.unsubscribeChildChanges(nodePath, childListeners.remove(nodePath));
         zkClient.unsubscribeDataChanges(nodePath, dataListeners.remove(nodePath));
         AlertDialog.error("该节点通知成功移除！");
+    }
+
+    private static class MyZkSerializer implements ZkSerializer {
+
+        @Override
+        public byte[] serialize(Object data) throws ZkMarshallingError {
+            return String.valueOf(data).getBytes(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public Object deserialize(byte[] bytes) throws ZkMarshallingError {
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
     }
 }
