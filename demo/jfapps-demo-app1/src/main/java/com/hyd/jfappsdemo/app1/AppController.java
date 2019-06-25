@@ -10,7 +10,10 @@ public class AppController {
     public Label lblMessage;
 
     public void initialize() {
+
+        // 你可以使用 jfapps 提供的配置存取接口，如果你不打算自己实现的话
         String lastChooseFile = MainApp.APP_CONTEXT.getConfiguration("lastChooseFile");
+
         if (lastChooseFile != null) {
             lblMessage.setText("你上次选择了 " + lastChooseFile);
         }

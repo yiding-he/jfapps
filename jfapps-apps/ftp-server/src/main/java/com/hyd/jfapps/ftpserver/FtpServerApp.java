@@ -1,5 +1,6 @@
 package com.hyd.jfapps.ftpserver;
 
+import com.hyd.jfapps.appbase.AppCategory;
 import com.hyd.jfapps.appbase.AppInfo;
 import com.hyd.jfapps.appbase.JfappsApp;
 import com.hyd.jfapps.appbase.JfappsAppLauncher;
@@ -9,7 +10,12 @@ import javafx.scene.Parent;
 /**
  * 简易 FTP 服务器，源码来自 https://github.com/864381832/xJavaFxTool
  */
-@AppInfo(name = "FTP 服务器")
+@AppInfo(
+    name = "FTP 服务器",
+    author = "xJavaFxTool",
+    url = "https://github.com/864381832/xJavaFxTool",
+    category = AppCategory.REMOTE_SERVICE
+)
 public class FtpServerApp extends JfappsApp {
 
     private FtpServerController controller;

@@ -6,7 +6,11 @@ import com.hyd.jfapps.appbase.JfappsApp;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 
-@AppInfo(name = "第一个 App 示例")
+@AppInfo(
+        name = "第一个 App 示例",
+        author = "yiding-he",
+        url = "https://cn.bing.com"
+)
 public class MainApp extends JfappsApp {
 
     public static AppContext APP_CONTEXT;

@@ -27,6 +27,8 @@ public class AppContainer {
 
     private String jfappsClassName;
 
+    private AppInfo appInfo;
+
     private String configFilePath;
 
     //////////////////////////////////////////////////////////////
@@ -48,6 +50,10 @@ public class AppContainer {
 
     public JfappsApp getAppInstance() {
         return appInstance;
+    }
+
+    public AppInfo getAppInfo() {
+        return appInfo;
     }
 
     public AppClassLoader getAppClassLoader() {
@@ -104,11 +110,10 @@ public class AppContainer {
         //////////////////////////////////////////////////////////////
 
         jfappsClass = (Class<? extends JfappsApp>) appClassLoader.loadClass(jfappsClassName);
+        appInfo = jfappsClass.getAnnotation(AppInfo.class);
 
         appName = Optional
-            .ofNullable(
-                jfappsClass.getAnnotation(AppInfo.class)
-            )
+            .ofNullable(appInfo)
             .map(AppInfo::name)
             .orElse(jfappsClass.getSimpleName());
     }
