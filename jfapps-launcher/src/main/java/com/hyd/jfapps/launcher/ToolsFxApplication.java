@@ -199,7 +199,11 @@ public class ToolsFxApplication extends Application {
             AppContainer _appContainer = (AppContainer) _tab.getUserData();
             JfappsApp appInstance = _appContainer.getAppInstance();
             if (appInstance != null && appInstance.getOnCloseRequest() != null) {
-                appInstance.getOnCloseRequest().run();
+                try {
+                    appInstance.getOnCloseRequest().run();
+                } catch (Exception e) {
+                    AlertDialog.error("错误", e);
+                }
             }
         });
 

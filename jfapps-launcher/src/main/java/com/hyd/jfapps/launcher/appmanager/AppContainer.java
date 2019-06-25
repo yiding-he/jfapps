@@ -151,12 +151,20 @@ public class AppContainer {
         appInstance.setAppContext(appContext);
 
         if (appInstance.getOnInitialized() != null) {
-            appInstance.getOnInitialized().run();
+            try {
+                appInstance.getOnInitialized().run();
+            } catch (Exception e) {
+                AlertDialog.error("错误", e);
+            }
         }
     }
 
     public void closeApp() {
-        appInstance = null;
+        try {
+            appInstance = null;
+        } catch (Exception e) {
+            AlertDialog.error("错误", e);
+        }
     }
 
     private static String getConfigFileName(String appMainClassName) {
