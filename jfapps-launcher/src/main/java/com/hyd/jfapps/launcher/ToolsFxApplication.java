@@ -3,8 +3,8 @@ package com.hyd.jfapps.launcher;
 import com.hyd.jfapps.appbase.JfappsApp;
 import com.hyd.jfapps.launcher.appmanager.AppContainer;
 import com.hyd.jfapps.launcher.appmanager.AppManager;
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -12,25 +12,34 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
 public class ToolsFxApplication extends Application {
 
+    private static HostServices hostServices;
+
+    public static HostServices getHServices() {
+        return hostServices;
+    }
+
     @Override
     public void start(Stage primaryStage) {
+        ToolsFxApplication.hostServices = getHostServices();
+
         Icons.setStageIcon(primaryStage);
         AppManager.GLOBAL_CONTEXT.put("primaryStage", primaryStage);
 
-        TabPane root = new TabPane();
-        root.getTabs().add(mainTab(root));
-
+        Parent root = createRoot();
         Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
         double width = Math.max(visualBounds.getWidth() - 200, 1000);
         double height = Math.max(visualBounds.getHeight() - 200, 600);
@@ -43,27 +52,68 @@ public class ToolsFxApplication extends Application {
         primaryStage.show();
     }
 
+    private Parent createRoot() {
+        return mainTabPane();
+    }
+
+    private HBox searchBox() {
+        TextField textField = new TextField();
+        textField.setPrefWidth(300);
+        textField.textProperty().addListener((_ob, _old, _new) -> {
+            search(_new);
+        });
+        return new HBox(textField);
+    }
+
+    private void search(String keyword) {
+        appMappings.forEach((appContainer, parent) -> {
+
+            boolean match = keyword.trim().length() == 0 ||
+                appContainer.getAppName().toLowerCase().contains(keyword.toLowerCase());
+
+            parent.setVisible(match);
+        });
+    }
+
+    private TabPane mainTabPane() {
+        TabPane tabPane = new TabPane();
+        tabPane.getTabs().add(mainTab(tabPane));
+        return tabPane;
+    }
+
+    private Map<AppContainer, Parent> appMappings = new HashMap<>();
+
     private Tab mainTab(TabPane tabPane) {
 
         FlowPane flowPane = new FlowPane();
-        flowPane.setPadding(new Insets(40));
+        flowPane.setStyle("-fx-border-style: none");
         flowPane.setHgap(40);
         flowPane.setVgap(40);
 
         List<AppContainer> containers = AppManager.getAppContainers();
         for (AppContainer container : containers) {
             Parent appPane = createAppPane(tabPane, container);
+            appPane.managedProperty().bind(appPane.visibleProperty());
+            appMappings.put(container, appPane);
             flowPane.getChildren().add(appPane);
         }
 
         ScrollPane scrollPane = new ScrollPane(flowPane);
+        scrollPane.setStyle("-fx-background-color:transparent");
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
+
+        VBox vBox = new VBox(25,
+            searchBox(),
+            scrollPane
+        );
+        vBox.setPadding(new Insets(20, 40, 40, 40));
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
         Tab tab = new Tab();
         tab.setClosable(false);
         tab.setGraphic(Icons.iconView("/logo.png", 16));
-        tab.setContent(scrollPane);
+        tab.setContent(vBox);
         return tab;
     }
 
@@ -74,12 +124,10 @@ public class ToolsFxApplication extends Application {
         );
         vBox.setPadding(new Insets(5, 0, 0, 0));
 
-        HBox hBox = new HBox(10,
+        return new HBox(10,
             Icons.iconView(container.getIcon(), 64),
             vBox
         );
-
-        return hBox;
     }
 
     private SplitMenuButton createAppButton(TabPane tabPane, AppContainer container) {
@@ -96,7 +144,7 @@ public class ToolsFxApplication extends Application {
             menuItem.setText("作者：" + container.getAppInfo().author());
             menuItem.setOnAction(event -> {
                 String url = container.getAppInfo().url();
-                HostServicesFactory.getInstance(this).showDocument(url);
+                getHServices().showDocument(url);
             });
             button.getItems().add(menuItem);
         }

@@ -1,20 +1,18 @@
 package com.hyd.jfapps.launcher.appmanager;
 
-import static com.hyd.jfapps.launcher.appmanager.AppManager.GLOBAL_CONTEXT;
-
 import com.hyd.jfapps.appbase.AppInfo;
 import com.hyd.jfapps.appbase.JfappsApp;
-import com.hyd.jfapps.launcher.AppClassLoader;
-import com.hyd.jfapps.launcher.AppContextImpl;
-import com.hyd.jfapps.launcher.AppLoadingException;
-import com.hyd.jfapps.launcher.Icons;
+import com.hyd.jfapps.launcher.*;
+import javafx.scene.image.Image;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javafx.scene.image.Image;
-import lombok.extern.slf4j.Slf4j;
+
+import static com.hyd.jfapps.launcher.appmanager.AppManager.GLOBAL_CONTEXT;
 
 @Slf4j
 public class AppContainer {
@@ -146,6 +144,7 @@ public class AppContainer {
         appInstance.setClassLoader(appClassLoader);
 
         AppContextImpl appContext = new AppContextImpl();
+        appContext.setHostServices(ToolsFxApplication::getHServices);
         appContext.setIcon(icon);
         appContext.setConfigFilePath(configFilePath);
         appContext.loadProperties();

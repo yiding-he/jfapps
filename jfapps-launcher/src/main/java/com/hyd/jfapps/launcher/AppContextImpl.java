@@ -1,6 +1,7 @@
 package com.hyd.jfapps.launcher;
 
 import com.hyd.jfapps.appbase.AppContext;
+import javafx.application.HostServices;
 import javafx.scene.image.Image;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 @Slf4j
 public class AppContextImpl implements AppContext {
@@ -20,6 +22,17 @@ public class AppContextImpl implements AppContext {
     private String configFilePath;
 
     private Properties appProperties = new Properties();
+
+    private Supplier<HostServices> hostServices;
+
+    public void setHostServices(Supplier<HostServices> hostServices) {
+        this.hostServices = hostServices;
+    }
+
+    @Override
+    public HostServices getHostServices() {
+        return hostServices.get();
+    }
 
     public void setIcon(Image icon) {
         this.icon = icon;
