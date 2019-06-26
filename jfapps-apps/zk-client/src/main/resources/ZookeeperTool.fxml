@@ -38,7 +38,7 @@
     </top>
     <center>
       <SplitPane dividerPositions="0.34560906515580736" BorderPane.alignment="CENTER">
-        <TreeView fx:id="nodeTreeView"/>
+        <TreeView fx:id="nodeTreeView" disable="true"/>
         <TabPane tabClosingPolicy="UNAVAILABLE">
           <Tab text="Node Data">
             <BorderPane>

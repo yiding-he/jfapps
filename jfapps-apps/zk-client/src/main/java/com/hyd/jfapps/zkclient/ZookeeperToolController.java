@@ -1,14 +1,16 @@
 package com.hyd.jfapps.zkclient;
 
+import static com.hyd.fx.builders.MenuBuilder.contextMenu;
+import static com.hyd.fx.builders.MenuBuilder.menuItem;
+
+import com.hyd.fx.concurrency.BackgroundTask;
+import com.hyd.fx.dialog.AlertDialog;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeItem;
 import javafx.scene.input.MouseButton;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,11 +25,38 @@ public class ZookeeperToolController extends ZookeeperToolView {
 
     private ZookeeperToolService zookeeperToolService = new ZookeeperToolService(this);
 
+    private BackgroundTask openConnectionTask = BackgroundTask
+        .runTask(() -> zookeeperToolService.initZkClient(
+            zkServersTextField.getText(),
+            connectionTimeoutSpinner.getValue()
+        ))
+        .whenBeforeStart(() -> {
+            connectButton.setDisable(true);
+            nodeTreeView.setDisable(true);
+            lblStatus.setText("连接中...");
+        })
+        .whenTaskSuccess(() -> {
+            lblStatus.setText("已连接");
+            nodeTreeView.setDisable(false);
+        })
+        .whenTaskFail(e -> {
+            AlertDialog.error("连接失败", e);
+            lblStatus.setText("连接失败");
+        })
+        .whenTaskFinish(() -> connectButton.setDisable(false));
+
+    private ContextMenu treeContextMenu = contextMenu(
+        menuItem("添加子节点", zookeeperToolService::addNodeOnAction),
+        menuItem("复制节点", zookeeperToolService::copyNodeOnAction),
+        menuItem("删除", zookeeperToolService::deleteNodeOnAction),
+        menuItem("添加节点修改通知", zookeeperToolService::addNodeNotify),
+        menuItem("移除节点修改通知", zookeeperToolService::removeNodeNotify)
+    );
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initView();
         initEvent();
-        initService();
     }
 
     private void initView() {
@@ -39,91 +68,31 @@ public class ZookeeperToolController extends ZookeeperToolView {
     }
 
     private void initEvent() {
+        nodeTreeView.getSelectionModel().selectedItemProperty()
+            .addListener((_ob, _old, _new) -> zookeeperToolService.nodeSelectionChanged(_new));
+
         nodeTreeView.setOnMouseClicked(event -> {
-            TreeItem<String> selectedItem = nodeTreeView.getSelectionModel().getSelectedItem();
-            if (selectedItem == null) {
+            if (nodeTreeView.getSelectionModel().getSelectedItem() == null) {
                 return;
             }
-            if (event.getButton() == MouseButton.PRIMARY) {
-                zookeeperToolService.nodeSelectionChanged(selectedItem);
-            } else if (event.getButton() == MouseButton.SECONDARY) {
-                MenuItem menu_UnfoldAll = new MenuItem("展开所有");
-                menu_UnfoldAll.setOnAction(event1 -> {
-                    nodeTreeView.getRoot().setExpanded(true);
-                    nodeTreeView.getRoot().getChildren().forEach(stringTreeItem -> {
-                        stringTreeItem.setExpanded(true);
-                    });
-                });
-                MenuItem menu_FoldAll = new MenuItem("折叠所有");
-                menu_FoldAll.setOnAction(event1 -> {
-                    nodeTreeView.getRoot().setExpanded(false);
-                    nodeTreeView.getRoot().getChildren().forEach(stringTreeItem -> {
-                        stringTreeItem.setExpanded(false);
-                    });
-                });
-                ContextMenu contextMenu = new ContextMenu(menu_UnfoldAll, menu_FoldAll);
-                MenuItem menu_AddNode = new MenuItem("添加子节点");
-                menu_AddNode.setOnAction(event1 -> {
-                    zookeeperToolService.addNodeOnAction();
-                });
-                contextMenu.getItems().add(menu_AddNode);
-                MenuItem menu_Rename = new MenuItem("重命名节点");
-                menu_Rename.setOnAction(event1 -> {
-                    zookeeperToolService.renameNodeOnAction(false);
-                });
-                contextMenu.getItems().add(menu_Rename);
-                MenuItem menu_Copy = new MenuItem("复制节点");
-                menu_Copy.setOnAction(event1 -> {
-                    zookeeperToolService.renameNodeOnAction(true);
-                });
-                contextMenu.getItems().add(menu_Copy);
-                MenuItem menu_RemoveNode = new MenuItem("删除");
-                menu_RemoveNode.setOnAction(event1 -> {
-                    zookeeperToolService.deleteNodeOnAction();
-                });
-                contextMenu.getItems().add(menu_RemoveNode);
-                MenuItem menu_AddNodeNotify = new MenuItem("添加节点修改通知");
-                menu_AddNodeNotify.setOnAction(event1 -> {
-                    zookeeperToolService.addNodeNotify();
-                });
-                contextMenu.getItems().add(menu_AddNodeNotify);
-                MenuItem menu_RemoveNodeNotify = new MenuItem("移除节点修改通知");
-                menu_RemoveNodeNotify.setOnAction(event1 -> {
-                    zookeeperToolService.removeNodeNotify();
-                });
-                contextMenu.getItems().add(menu_RemoveNodeNotify);
-                nodeTreeView.setContextMenu(contextMenu);
+            if (event.getButton() == MouseButton.SECONDARY) {
+                nodeTreeView.setContextMenu(treeContextMenu);
             }
         });
     }
 
-    private void initService() {
+    @FXML
+    private void connectOnAction() {
+        openConnectionTask.start();
     }
 
     @FXML
-    private void connectOnAction(ActionEvent event) {
-        connectButton.setDisable(true);
-        nodeTreeView.setDisable(true);
-
-        zookeeperToolService.connect(
-            zkServersTextField.getText().trim(),
-            connectionTimeoutSpinner.getValue(),
-            () -> zookeeperToolService.setupTree(),
-            e -> AlertDialog.error("连接失败", e),
-            () -> {
-                connectButton.setDisable(false);
-                nodeTreeView.setDisable(false);
-            }
-        );
-    }
-
-    @FXML
-    private void disconnectOnAction(ActionEvent event) {
+    private void disconnectOnAction() {
         zookeeperToolService.disconnectOnAction();
     }
 
     @FXML
-    private void nodeDataSaveOnAction(ActionEvent event) {
+    private void nodeDataSaveOnAction() {
         zookeeperToolService.nodeDataSaveOnAction();
     }
 

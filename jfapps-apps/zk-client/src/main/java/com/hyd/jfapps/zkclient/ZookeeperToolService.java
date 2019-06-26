@@ -1,13 +1,16 @@
 package com.hyd.jfapps.zkclient;
 
+import static com.hyd.jfapps.zkclient.ZkUtils.join;
+import static org.apache.commons.lang3.StringUtils.appendIfMissing;
+
 import com.hyd.fx.components.LazyLoadingTreeItem;
+import com.hyd.fx.dialog.AlertDialog;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 import lombok.Getter;
@@ -48,54 +51,8 @@ public class ZookeeperToolService {
         this.controller = controller;
     }
 
-    private void setStatus(String status) {
-        Platform.runLater(() -> this.controller.lblStatus.setText(status));
-    }
-
-    private static void runBackground(
-        Runnable task, Runnable onSuccess, Consumer<Throwable> onFail, Runnable onFinish) {
-
-        Thread thread = new Thread(() -> {
-            try {
-                task.run();
-                if (onSuccess != null) {
-                    onSuccess.run();
-                }
-            } catch (Throwable e) {
-                if (onFail != null) {
-                    onFail.accept(e);
-                }
-            } finally {
-                if (onFinish != null) {
-                    onFinish.run();
-                }
-            }
-        });
-
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    public void connect(
-        String serverAddress, int timeoutMillis,
-        Runnable onSuccess, Consumer<Throwable> onFail, Runnable onFinish) {
-
-        if (zkClient != null) {
-            zkClient.close();
-        }
-
-        runBackground(
-            () -> {
-                try {
-                    setStatus("Connecting...");
-                    zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
-                    setStatus("Connected.");
-                } catch (Throwable e) {
-                    AlertDialog.error("连接失败", e);
-                }
-            },
-            onSuccess, onFail, onFinish
-        );
+    public void initZkClient(String serverAddress, int timeoutMillis) {
+        zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
     }
 
     private void addNodeTree(String path, TreeItem<String> parent) {
@@ -103,7 +60,7 @@ public class ZookeeperToolService {
         for (String name : list) {
             TreeItem<String> child = new TreeItem<>(name);
             Platform.runLater(() -> parent.getChildren().add(child));
-            addNodeTree(StringUtils.appendIfMissing(path, "/", "/") + name, child);
+            addNodeTree(appendIfMissing(path, "/", "/") + name, child);
         }
     }
 
@@ -123,7 +80,7 @@ public class ZookeeperToolService {
         stringBuffer.append(selectedItem.getValue());
         TreeItem<String> indexItem = selectedItem.getParent();
         while (indexItem != null) {
-            stringBuffer.insert(0, StringUtils.appendIfMissing(indexItem.getValue(), "/", "/"));
+            stringBuffer.insert(0, appendIfMissing(indexItem.getValue(), "/", "/"));
             indexItem = indexItem.getParent();
         }
         return stringBuffer.toString();
@@ -196,52 +153,40 @@ public class ZookeeperToolService {
     }
 
     public void addNodeOnAction() {
-        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
-        if (selectedItem == null) {
-            AlertDialog.error("未选中节点");
-            return;
-        }
-        String nodeName = AlertDialog.input("请输入节点名称：");
+        String nodeName = AlertDialog.input("添加节点", "请输入节点名称：", false);
         if (StringUtils.isEmpty(nodeName)) {
-            AlertDialog.error("节点名不能为空！");
             return;
         }
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         String nodePath = this.getNodePath(selectedItem);
-        zkClient.createPersistent(StringUtils.appendIfMissing(nodePath, "/", "/") + nodeName);
-        TreeItem<String> treeItem2 = new TreeItem<>(nodeName);
-        selectedItem.getChildren().add(treeItem2);
+        zkClient.createPersistent(appendIfMissing(nodePath, "/", "/") + nodeName);
+
+        ((LazyLoadingTreeItem<String>)selectedItem).addChild(nodeName);
     }
 
-    public void renameNodeOnAction(boolean isCopy) {
-        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
-        if (selectedItem == null) {
-            AlertDialog.error("未选中节点");
-            return;
-        }
-        String nodeName = AlertDialog.input("请输入节点新名称：");
+    public void copyNodeOnAction() {
+        // todo : 不能复制根节点；用户输入的名字不能与现有节点重复
+        String nodeName = AlertDialog.input("复制节点", "请输入节点新名称：", false);
         if (StringUtils.isEmpty(nodeName)) {
-            AlertDialog.error("节点名不能为空！");
             return;
         }
-//        String nodePath = this.getNodePath(selectedItem);
+
+        TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
         String nodeParent = this.getNodePath(selectedItem.getParent());
-        String nodeParentPath = StringUtils.appendIfMissing(nodeParent, "/", "/");
+        String nodeParentPath = appendIfMissing(nodeParent, "/", "/");
         copyNode(nodeParentPath + selectedItem.getValue(), nodeParentPath + nodeName);
-        if (isCopy) {
-            TreeItem<String> selectedItem2 = new TreeItem<>(nodeName);
-            addNodeTree(nodeParentPath + nodeName, selectedItem2);
-            selectedItem.getParent().getChildren().add(selectedItem2);
-        } else {
-            zkClient.deleteRecursive(nodeParentPath + selectedItem.getValue());
-            selectedItem.setValue(nodeName);
-        }
+
+        // todo : 使用 LazyLoadingTreeItem
+
+        TreeItem<String> selectedItem2 = new TreeItem<>(nodeName);
+        addNodeTree(nodeParentPath + nodeName, selectedItem2);
+        selectedItem.getParent().getChildren().add(selectedItem2);
     }
 
-    private void copyNode(String path, String copyPath) {
-        zkClient.createPersistent(copyPath, zkClient.readData(path), zkClient.getAcl(path).getKey());
-        List<String> list = getZkChildren(path);
-        for (String name : list) {
-            copyNode(StringUtils.appendIfMissing(path, "/", "/") + name, StringUtils.appendIfMissing(copyPath, "/", "/") + name);
+    private void copyNode(String path, String newPath) {
+        zkClient.createPersistent(newPath, zkClient.readData(path), zkClient.getAcl(path).getKey());
+        for (String childPath : getZkChildren(path)) {
+            copyNode(join(path, childPath), join(newPath, childPath));
         }
     }
 
@@ -266,7 +211,8 @@ public class ZookeeperToolService {
             AlertDialog.error("该节点已经添加通知！");
             return;
         }
-        IZkChildListener childListener = (parentPath, currentChilds) -> AlertDialog.error("节点Child改变了", "Path:" + parentPath + "\r\n 子节点：" + currentChilds.toString());
+        IZkChildListener childListener = (parentPath, currentChilds) ->
+            AlertDialog.error("节点Child改变了", "Path:" + parentPath + "\r\n 子节点：" + currentChilds.toString());
         zkClient.subscribeChildChanges(nodePath, childListener);
         childListeners.put(nodePath, childListener);
         IZkDataListener dataListener = new IZkDataListener() {
