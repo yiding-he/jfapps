@@ -37,6 +37,7 @@ public class ZookeeperToolController extends ZookeeperToolView {
         })
         .whenTaskSuccess(() -> {
             lblStatus.setText("已连接");
+            zookeeperToolService.setupTree();
             nodeTreeView.setDisable(false);
         })
         .whenTaskFail(e -> {
@@ -61,7 +62,6 @@ public class ZookeeperToolController extends ZookeeperToolView {
 
     private void initView() {
         JavaFxViewUtil.setSpinnerValueFactory(connectionTimeoutSpinner, 0, Integer.MAX_VALUE, 30000);
-        zookeeperToolService.setupTree();
 
         Optional.ofNullable(System.getProperty("server"))
             .ifPresent(server -> zkServersTextField.setText(server));

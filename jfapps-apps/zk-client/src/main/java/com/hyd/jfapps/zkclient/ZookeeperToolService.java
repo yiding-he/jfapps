@@ -1,12 +1,14 @@
 package com.hyd.jfapps.zkclient;
 
-import static com.hyd.jfapps.zkclient.ZkUtils.join;
+import static com.hyd.jfapps.zkclient.ZkUtils.concatPathWithSlash;
 import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 
 import com.hyd.fx.components.LazyLoadingTreeItem;
+import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -143,11 +145,11 @@ public class ZookeeperToolService {
 
     public void deleteNodeOnAction() {
         TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
-        if (selectedItem == null) {
-            AlertDialog.error("未选中节点");
+        if (!AlertDialog.confirmOkCancel("删除节点",
+            "确认要删除节点 '" + selectedItem.getValue() + "' 吗？该操作不可恢复！")) {
             return;
         }
-        String nodePath = this.getNodePath(selectedItem);
+        String nodePath = getNodePath(selectedItem);
         zkClient.deleteRecursive(nodePath);
         selectedItem.getParent().getChildren().remove(selectedItem);
     }
@@ -161,32 +163,59 @@ public class ZookeeperToolService {
         String nodePath = this.getNodePath(selectedItem);
         zkClient.createPersistent(appendIfMissing(nodePath, "/", "/") + nodeName);
 
-        ((LazyLoadingTreeItem<String>)selectedItem).addChild(nodeName);
+        ((LazyLoadingTreeItem<String>) selectedItem).addChild(nodeName);
     }
 
     public void copyNodeOnAction() {
-        // todo : 不能复制根节点；用户输入的名字不能与现有节点重复
         String nodeName = AlertDialog.input("复制节点", "请输入节点新名称：", false);
-        if (StringUtils.isEmpty(nodeName)) {
+
+        if (nodeName == null) {
+            return;
+        } else if (StringUtils.isEmpty(nodeName)) {
+            AlertDialog.error("错误", "名称不能为空");
             return;
         }
 
         TreeItem<String> selectedItem = controller.getNodeTreeView().getSelectionModel().getSelectedItem();
-        String nodeParent = this.getNodePath(selectedItem.getParent());
-        String nodeParentPath = appendIfMissing(nodeParent, "/", "/");
-        copyNode(nodeParentPath + selectedItem.getValue(), nodeParentPath + nodeName);
+        if (selectedItem.getParent() == null) {
+            AlertDialog.error("错误", "不能复制根节点。");
+            return;
+        }
 
-        // todo : 使用 LazyLoadingTreeItem
+        if (selectedItem.getParent().getChildren().stream().anyMatch(item -> item.getValue().equals(nodeName))) {
+            AlertDialog.error("错误", "名为 '" + nodeName + "' 的节点已经存在。");
+            return;
+        }
 
-        TreeItem<String> selectedItem2 = new TreeItem<>(nodeName);
-        addNodeTree(nodeParentPath + nodeName, selectedItem2);
-        selectedItem.getParent().getChildren().add(selectedItem2);
+        String nodeParent = getNodePath(selectedItem.getParent());
+        copyNodeAsync(
+            concatPathWithSlash(nodeParent, selectedItem.getValue()),
+            concatPathWithSlash(nodeParent, nodeName),
+            selectedItem.getParent()
+        );
+    }
+
+    private void copyNodeAsync(String path, String newPath, TreeItem<String> parentNode) {
+        String newPathName = newPath.substring(newPath.lastIndexOf("/") + 1);
+        BackgroundTask
+            .runTask(() -> copyNode(path, newPath))
+            .whenBeforeStart(() -> controller.nodeTreeView.setDisable(true))
+            .whenTaskSuccess(() -> {
+                LazyLoadingTreeItem<String> parent = (LazyLoadingTreeItem<String>) parentNode;
+                parent.addChild(newPathName);
+                parent.getChildren().sort(Comparator.comparing(TreeItem::getValue));
+            })
+            .whenTaskFinish(() -> controller.nodeTreeView.setDisable(false))
+            .start();
     }
 
     private void copyNode(String path, String newPath) {
-        zkClient.createPersistent(newPath, zkClient.readData(path), zkClient.getAcl(path).getKey());
+
+        zkClient.createPersistent(
+            newPath, zkClient.readData(path), zkClient.getAcl(path).getKey());
+
         for (String childPath : getZkChildren(path)) {
-            copyNode(join(path, childPath), join(newPath, childPath));
+            copyNode(concatPathWithSlash(path, childPath), concatPathWithSlash(newPath, childPath));
         }
     }
 

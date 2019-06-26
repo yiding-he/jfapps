@@ -7,7 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ZkUtils {
 
-    public static String join(String... parts) {
+    public static String concatPathWithSlash(String... parts) {
+        return "/" + concatPath(parts);
+    }
+
+    public static String concatPath(String... parts) {
         return Stream.of(parts)
             .filter(Objects::nonNull)
             .map(s -> s.endsWith("/")? s.substring(0, s.length() - 1) : s)

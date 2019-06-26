@@ -109,20 +109,29 @@
             </ScrollPane>
           </Tab>
           <Tab text="Node ACLs">
-            <AnchorPane minHeight="0.0" minWidth="0.0">
-              <Label layoutX="14.0" layoutY="14.0" text="Scheme:"/>
-              <TextField fx:id="aclSchemeTextField" editable="false" layoutX="98.0" layoutY="10.0"/>
-              <Label layoutX="14.0" layoutY="53.0" text="Id:"/>
-              <TextField fx:id="aclIdTextField" editable="false" layoutX="98.0" layoutY="49.0"/>
-              <Label layoutX="14.0" layoutY="94.0" text="Permissions:"/>
-              <TextField fx:id="aclPermissionsTextField" editable="false" layoutX="98.0" layoutY="90.0"/>
-            </AnchorPane>
+            <VBox spacing="10">
+              <padding>
+                <Insets topRightBottomLeft="15"/>
+              </padding>
+              <HBox styleClass="form-field">
+                <Label text="Scheme:"/>
+                <TextField fx:id="aclSchemeTextField" editable="false" HBox.hgrow="ALWAYS"/>
+              </HBox>
+              <HBox styleClass="form-field">
+                <Label text="Id:"/>
+                <TextField fx:id="aclIdTextField" editable="false" HBox.hgrow="ALWAYS"/>
+              </HBox>
+              <HBox styleClass="form-field">
+                <Label text="Permissions:"/>
+                <TextField fx:id="aclPermissionsTextField" editable="false" HBox.hgrow="ALWAYS"/>
+              </HBox>
+            </VBox>
           </Tab>
         </TabPane>
       </SplitPane>
     </center>
     <bottom>
-      <Label fx:id="lblStatus"/>
+      <Label fx:id="lblStatus" style="-fx-padding: 5 0 0 0" text="尚未连接服务器。"/>
     </bottom>
   </BorderPane>
 </AnchorPane>
