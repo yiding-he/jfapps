@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import static com.hyd.jfapps.cronparser.JavaFxViewUtil.setSpinnerValueFactory;
+
 /**
  * @ClassName: CronExpBuilderController
  * @Description: Cron表达式生成工具
@@ -34,6 +36,12 @@ import java.util.ResourceBundle;
 public class CronExpBuilderController extends CronExpBuilderView {
 
     public FlowPane flpSeconds;
+
+    public FlowPane flpMinutes;
+
+    public FlowPane flpHours;
+
+    public FlowPane flpDays;
 
     private CheckBox[] secondCheckBox = new CheckBox[60];
 
@@ -64,34 +72,34 @@ public class CronExpBuilderController extends CronExpBuilderView {
         cronTextFields = new TextField[]{jTF_Cron_Second, jTF_Cron_Minute, jTF_Cron_Hour, jTF_Cron_Day,
                 jTF_Cron_Month, jTF_Cron_Week, jTF_Cron_Year};
         Calendar calendar = Calendar.getInstance();
-        JavaFxViewUtil.setSpinnerValueFactory(secondStart_0, 1, 58);
-        JavaFxViewUtil.setSpinnerValueFactory(secondEnd_0, 2, 59);
-        JavaFxViewUtil.setSpinnerValueFactory(secondStart_1, 0, 59);
-        JavaFxViewUtil.setSpinnerValueFactory(secondEnd_1, 1, 59);
-        JavaFxViewUtil.setSpinnerValueFactory(minuteStart_0, 1, 58, calendar.get(Calendar.MINUTE));
-        JavaFxViewUtil.setSpinnerValueFactory(minuteEnd_0, 2, 59, calendar.get(Calendar.MINUTE) + 1);
-        JavaFxViewUtil.setSpinnerValueFactory(minuteStart_1, 0, 59, calendar.get(Calendar.MINUTE));
-        JavaFxViewUtil.setSpinnerValueFactory(minuteEnd_1, 1, 59);
-        JavaFxViewUtil.setSpinnerValueFactory(hourStart_0, 0, 23, calendar.get(Calendar.HOUR));
-        JavaFxViewUtil.setSpinnerValueFactory(hourEnd_0, 2, 23, calendar.get(Calendar.HOUR) + 1);
-        JavaFxViewUtil.setSpinnerValueFactory(hourStart_1, 0, 23, calendar.get(Calendar.HOUR));
-        JavaFxViewUtil.setSpinnerValueFactory(hourEnd_1, 1, 23);
-        JavaFxViewUtil.setSpinnerValueFactory(dayStart_0, 1, 31, calendar.get(Calendar.DAY_OF_MONTH));
-        JavaFxViewUtil.setSpinnerValueFactory(dayEnd_0, 2, 31, calendar.get(Calendar.DAY_OF_MONTH) + 1);
-        JavaFxViewUtil.setSpinnerValueFactory(dayStart_1, 1, 31, calendar.get(Calendar.DAY_OF_MONTH));
-        JavaFxViewUtil.setSpinnerValueFactory(dayEnd_1, 1, 31);
-        JavaFxViewUtil.setSpinnerValueFactory(dayStart_2, 1, 31, calendar.get(Calendar.DAY_OF_MONTH));
-        JavaFxViewUtil.setSpinnerValueFactory(monthStart_0, 1, 12, calendar.get(Calendar.MONTH) + 1);
-        JavaFxViewUtil.setSpinnerValueFactory(monthEnd_0, 2, 12, calendar.get(Calendar.MONTH) + 1);
-        JavaFxViewUtil.setSpinnerValueFactory(monthStart_1, 1, 12, calendar.get(Calendar.DAY_OF_MONTH));
-        JavaFxViewUtil.setSpinnerValueFactory(monthEnd_1, 1, 12);
-        JavaFxViewUtil.setSpinnerValueFactory(weekStart_0, 1, 7);
-        JavaFxViewUtil.setSpinnerValueFactory(weekEnd_0, 2, 7);
-        JavaFxViewUtil.setSpinnerValueFactory(weekStart_1, 1, 4);
-        JavaFxViewUtil.setSpinnerValueFactory(weekEnd_1, 1, 7, calendar.get(Calendar.DAY_OF_WEEK));
-        JavaFxViewUtil.setSpinnerValueFactory(weekStart_2, 1, 7);
-        JavaFxViewUtil.setSpinnerValueFactory(yearStart_0, 2012, 3000, calendar.get(Calendar.YEAR));
-        JavaFxViewUtil.setSpinnerValueFactory(yearEnd_0, 2013, 3000, calendar.get(Calendar.YEAR) + 1);
+        setSpinnerValueFactory(secondStart_0, 1, 58);
+        setSpinnerValueFactory(secondEnd_0, 2, 59);
+        setSpinnerValueFactory(secondStart_1, 0, 59);
+        setSpinnerValueFactory(secondEnd_1, 1, 59);
+        setSpinnerValueFactory(minuteStart_0, 1, 58, calendar.get(Calendar.MINUTE));
+        setSpinnerValueFactory(minuteEnd_0, 2, 59, calendar.get(Calendar.MINUTE) + 1);
+        setSpinnerValueFactory(minuteStart_1, 0, 59, calendar.get(Calendar.MINUTE));
+        setSpinnerValueFactory(minuteEnd_1, 1, 59);
+        setSpinnerValueFactory(hourStart_0, 0, 23, calendar.get(Calendar.HOUR));
+        setSpinnerValueFactory(hourEnd_0, 2, 23, calendar.get(Calendar.HOUR) + 1);
+        setSpinnerValueFactory(hourStart_1, 0, 23, calendar.get(Calendar.HOUR));
+        setSpinnerValueFactory(hourEnd_1, 1, 23);
+        setSpinnerValueFactory(dayStart_0, 1, 31, calendar.get(Calendar.DAY_OF_MONTH));
+        setSpinnerValueFactory(dayEnd_0, 2, 31, calendar.get(Calendar.DAY_OF_MONTH) + 1);
+        setSpinnerValueFactory(dayStart_1, 1, 31, calendar.get(Calendar.DAY_OF_MONTH));
+        setSpinnerValueFactory(dayEnd_1, 1, 31);
+        setSpinnerValueFactory(dayStart_2, 1, 31, calendar.get(Calendar.DAY_OF_MONTH));
+        setSpinnerValueFactory(monthStart_0, 1, 12, calendar.get(Calendar.MONTH) + 1);
+        setSpinnerValueFactory(monthEnd_0, 2, 12, calendar.get(Calendar.MONTH) + 1);
+        setSpinnerValueFactory(monthStart_1, 1, 12, calendar.get(Calendar.DAY_OF_MONTH));
+        setSpinnerValueFactory(monthEnd_1, 1, 12);
+        setSpinnerValueFactory(weekStart_0, 1, 7);
+        setSpinnerValueFactory(weekEnd_0, 2, 7);
+        setSpinnerValueFactory(weekStart_1, 1, 4);
+        setSpinnerValueFactory(weekEnd_1, 1, 7, calendar.get(Calendar.DAY_OF_WEEK));
+        setSpinnerValueFactory(weekStart_2, 1, 7);
+        setSpinnerValueFactory(yearStart_0, 2012, 3000, calendar.get(Calendar.YEAR));
+        setSpinnerValueFactory(yearEnd_0, 2013, 3000, calendar.get(Calendar.YEAR) + 1);
 
         for (int i = 0; i < 60; i++) {
             secondCheckBox[i] = new CheckBox(String.format("%02d", i));
@@ -100,21 +108,20 @@ public class CronExpBuilderController extends CronExpBuilderView {
 
         for (int i = 0; i < 60; i++) {
             minuteCheckBox[i] = new CheckBox(String.format("%02d", i));
-            minuteCheckBox[i].setLayoutX(32 + i % 10 * 60);
-            minuteCheckBox[i].setLayoutY(120 + i / 10 * 20);
-            ((AnchorPane) tabMinute.getContent()).getChildren().add(minuteCheckBox[i]);
-            if (i < 24) {
-                hourCheckBox[i] = new CheckBox(String.format("%02d", i));
-                hourCheckBox[i].setLayoutX(32 + i % 10 * 60);
-                hourCheckBox[i].setLayoutY(120 + i / 10 * 20);
-                ((AnchorPane) tabHour.getContent()).getChildren().add(hourCheckBox[i]);
-            }
-            if (i < 31) {
-                dayCheckBox[i] = new CheckBox(String.format("%2d", i + 1));
-                dayCheckBox[i].setLayoutX(32 + i % 12 * 60);
-                dayCheckBox[i].setLayoutY(200 + i / 12 * 20);
-                ((AnchorPane) tabDay.getContent()).getChildren().add(dayCheckBox[i]);
-            }
+            flpMinutes.getChildren().add(minuteCheckBox[i]);
+        }
+
+        for (int i = 0; i < 24; i++) {
+            hourCheckBox[i] = new CheckBox(String.format("%02d", i));
+            flpHours.getChildren().add(hourCheckBox[i]);
+        }
+
+        for (int i = 0; i < 31; i++) {
+            dayCheckBox[i] = new CheckBox(String.format("%02d", i + 1));
+            flpDays.getChildren().add(dayCheckBox[i]);
+        }
+
+        for (int i = 0; i < 60; i++) {
             if (i < 12) {
                 monthCheckBox[i] = new CheckBox(String.format("%2d", i + 1));
                 monthCheckBox[i].setLayoutX(32 + i % 12 * 50);
