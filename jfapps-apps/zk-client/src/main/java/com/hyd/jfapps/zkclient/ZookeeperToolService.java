@@ -1,5 +1,13 @@
 package com.hyd.jfapps.zkclient;
 
+import com.hyd.fx.components.LazyLoadingTreeItem;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 import lombok.Getter;
@@ -15,13 +23,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * @ClassName: ZookeeperToolService
@@ -89,7 +90,6 @@ public class ZookeeperToolService {
                     setStatus("Connecting...");
                     zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
                     setStatus("Connected.");
-                    Platform.runLater(ZookeeperToolService.this::buildNodeTree);
                 } catch (Throwable e) {
                     AlertDialog.error("连接失败", e);
                 }
@@ -98,23 +98,23 @@ public class ZookeeperToolService {
         );
     }
 
-    private void buildNodeTree() {
-        TreeItem<String> root = controller.getNodeTreeView().getRoot();
-        root.getChildren().clear();
-        runBackground(
-            () -> this.addNodeTree("/", root),
-            () -> Platform.runLater(() -> root.setExpanded(true)),
-            e -> AlertDialog.error("", e),
-            null
-        );
-    }
-
     private void addNodeTree(String path, TreeItem<String> parent) {
-        List<String> list = zkClient.getChildren(path);
+        List<String> list = getZkChildren(getNodePath(parent));
         for (String name : list) {
             TreeItem<String> child = new TreeItem<>(name);
             Platform.runLater(() -> parent.getChildren().add(child));
             addNodeTree(StringUtils.appendIfMissing(path, "/", "/") + name, child);
+        }
+    }
+
+    private List<String> getZkChildren(String path) {
+        try {
+            List<String> children = zkClient.getChildren(path);
+            Collections.sort(children);
+            return children;
+        } catch (Exception e) {
+            log.error("", e);
+            return Collections.emptyList();
         }
     }
 
@@ -239,7 +239,7 @@ public class ZookeeperToolService {
 
     private void copyNode(String path, String copyPath) {
         zkClient.createPersistent(copyPath, zkClient.readData(path), zkClient.getAcl(path).getKey());
-        List<String> list = zkClient.getChildren(path);
+        List<String> list = getZkChildren(path);
         for (String name : list) {
             copyNode(StringUtils.appendIfMissing(path, "/", "/") + name, StringUtils.appendIfMissing(copyPath, "/", "/") + name);
         }
@@ -295,6 +295,12 @@ public class ZookeeperToolService {
         zkClient.unsubscribeChildChanges(nodePath, childListeners.remove(nodePath));
         zkClient.unsubscribeDataChanges(nodePath, dataListeners.remove(nodePath));
         AlertDialog.error("该节点通知成功移除！");
+    }
+
+    public void setupTree() {
+        controller.nodeTreeView.setRoot(new LazyLoadingTreeItem<>(
+            "/", parent -> getZkChildren(getNodePath(parent)), "加载中..."
+        ));
     }
 
     private static class MyZkSerializer implements ZkSerializer {

@@ -1,5 +1,8 @@
 package com.hyd.jfapps.zkclient;
 
+import java.net.URL;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ContextMenu;
@@ -10,16 +13,6 @@ import javafx.scene.input.MouseButton;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.URL;
-import java.util.ResourceBundle;
-
-/**
- * @ClassName: ZookeeperToolController
- * @Description: Zookeeper工具
- * @author: xufeng
- * @date: 2019/4/8 17:00
- */
 
 @Getter
 @Setter
@@ -38,9 +31,11 @@ public class ZookeeperToolController extends ZookeeperToolView {
     }
 
     private void initView() {
-        JavaFxViewUtil.setSpinnerValueFactory(connectionTimeoutSpinner, 0, Integer.MAX_VALUE, 5000);
-        TreeItem<String> treeItem = new TreeItem<String>("/");
-        nodeTreeView.setRoot(treeItem);
+        JavaFxViewUtil.setSpinnerValueFactory(connectionTimeoutSpinner, 0, Integer.MAX_VALUE, 30000);
+        zookeeperToolService.setupTree();
+
+        Optional.ofNullable(System.getProperty("server"))
+            .ifPresent(server -> zkServersTextField.setText(server));
     }
 
     private void initEvent() {
@@ -108,13 +103,17 @@ public class ZookeeperToolController extends ZookeeperToolView {
     @FXML
     private void connectOnAction(ActionEvent event) {
         connectButton.setDisable(true);
+        nodeTreeView.setDisable(true);
 
         zookeeperToolService.connect(
             zkServersTextField.getText().trim(),
             connectionTimeoutSpinner.getValue(),
-            () -> {},
+            () -> zookeeperToolService.setupTree(),
             e -> AlertDialog.error("连接失败", e),
-            () -> connectButton.setDisable(false)
+            () -> {
+                connectButton.setDisable(false);
+                nodeTreeView.setDisable(false);
+            }
         );
     }
 

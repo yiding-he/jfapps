@@ -64,6 +64,7 @@ public class ToolsFxApplication extends Application {
 
     private HBox searchBox() {
         TextField textField = new TextField();
+        textField.setPromptText("搜索");
         textField.setPrefWidth(300);
         textField.textProperty().addListener((_ob, _old, _new) -> {
             search(_new);
