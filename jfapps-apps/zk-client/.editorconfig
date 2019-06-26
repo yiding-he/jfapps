@@ -1,6 +1,9 @@
 [*]
 end_of_line = lf
 
-[*.{java,xml,properties}]
+[*.{java,properties}]
 indent_size = 4
 indent_style = space
+
+[*.{xml,fxml}]
+indent_size = 2
