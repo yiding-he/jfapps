@@ -7,28 +7,7 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.hyd.jfapps.cronparser.CronExpBuilderController">
 
-  <!--
-    <VBox spacing="10">
-      <padding>
-        <Insets topRightBottomLeft="15"/>
-      </padding>
-      <HBox alignment="BASELINE_LEFT" spacing="5">
-      </HBox>
-      <HBox alignment="BASELINE_LEFT" spacing="5">
-      </HBox>
-      <HBox alignment="BASELINE_LEFT" spacing="5">
-      </HBox>
-      <HBox alignment="BASELINE_LEFT" spacing="5">
-      </HBox>
-      <FlowPane fx:id="" VBox.vgrow="ALWAYS" hgap="17" vgap="7">
-        <padding>
-          <Insets left="15"/>
-        </padding>
-      </FlowPane>
-    </VBox>
-  -->
-
-  <TabPane fx:id="mainTabPane" tabMinWidth="80">
+  <TabPane fx:id="mainTabPane" tabMinWidth="70">
     <Tab fx:id="tabSecond" text="秒" closable="false">
       <VBox spacing="10">
         <padding>
@@ -185,126 +164,151 @@
       </VBox>
     </Tab>
     <Tab fx:id="tabMonth" text="月" closable="false">
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-        <RadioButton fx:id="radioButtonMonth1" layoutX="14.0" layoutY="14.0" mnemonicParsing="false"
-                     selected="true" text="月 允许的通配符[, - * /]">
-          <toggleGroup>
-            <ToggleGroup fx:id="toggleGroupMonth"/>
-          </toggleGroup>
-        </RadioButton>
-        <RadioButton fx:id="radioButtonMonth3" layoutX="14.0" layoutY="63.0" text="周期从"
-                     toggleGroup="$toggleGroupMonth"/>
-        <Spinner fx:id="monthStart_0" editable="true" layoutX="78.0" layoutY="60.0" prefHeight="23.0"
-                 prefWidth="73.0"/>
-        <Label layoutX="161.0" layoutY="64.0" text="--"/>
-        <Spinner fx:id="monthEnd_0" editable="true" layoutX="183.0" layoutY="60.0" prefHeight="23.0"
-                 prefWidth="75.0"/>
-        <Label layoutX="278.0" layoutY="64.0" text="月"/>
-        <RadioButton fx:id="radioButtonMonth4" layoutX="14.0" layoutY="91.0" text="从"
-                     toggleGroup="$toggleGroupMonth"/>
-        <RadioButton fx:id="radioButtonMonth2" layoutX="14.0" layoutY="38.0" text="不指定"
-                     toggleGroup="$toggleGroupMonth"/>
-        <Spinner fx:id="monthStart_1" editable="true" layoutX="60.0" layoutY="88.0" prefHeight="23.0"
-                 prefWidth="80.0"/>
-        <Label layoutX="153.0" layoutY="92.0" text="日开始，每"/>
-        <Spinner fx:id="monthEnd_1" editable="true" layoutX="228.0" layoutY="88.0" prefHeight="23.0"
-                 prefWidth="80.0"/>
-        <Label layoutX="328.0" layoutY="92.0" text="月执行一次"/>
-        <RadioButton fx:id="radioButtonMonth5" layoutX="14.0" layoutY="116.0" text="指定"
-                     toggleGroup="$toggleGroupMonth"/>
-      </AnchorPane>
+      <VBox spacing="10">
+        <padding>
+          <Insets topRightBottomLeft="15"/>
+        </padding>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonMonth1" selected="true" text="月 允许的通配符[, - * /]">
+            <toggleGroup>
+              <ToggleGroup fx:id="toggleGroupMonth"/>
+            </toggleGroup>
+          </RadioButton>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonMonth3" text="周期从" toggleGroup="$toggleGroupMonth"/>
+          <Spinner fx:id="monthStart_0" editable="true" prefWidth="80"/>
+          <Label text="--"/>
+          <Spinner fx:id="monthEnd_0" editable="true" prefWidth="80"/>
+          <Label text="月"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonMonth4" text="从" toggleGroup="$toggleGroupMonth"/>
+          <Spinner fx:id="monthStart_1" editable="true" prefWidth="80"/>
+          <Label text="日开始，每"/>
+          <Spinner fx:id="monthEnd_1" editable="true" prefWidth="80"/>
+          <Label text="月执行一次"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonMonth2" text="不指定" toggleGroup="$toggleGroupMonth"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonMonth5" text="指定" toggleGroup="$toggleGroupMonth"/>
+        </HBox>
+        <FlowPane fx:id="flpMonths" VBox.vgrow="ALWAYS" hgap="17" vgap="7">
+          <padding>
+            <Insets left="15"/>
+          </padding>
+        </FlowPane>
+      </VBox>
     </Tab>
     <Tab fx:id="tabWeek" text="周" closable="false">
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-        <RadioButton fx:id="radioButtonWeek1" layoutX="14.0" layoutY="14.0" mnemonicParsing="false"
-                     text="周 允许的通配符[, - * / L #]">
-          <toggleGroup>
-            <ToggleGroup fx:id="toggleGroupWeek"/>
-          </toggleGroup>
-        </RadioButton>
-        <RadioButton fx:id="radioButtonWeek3" layoutX="14.0" layoutY="63.0" text="周期从星期"
-                     toggleGroup="$toggleGroupWeek"/>
-        <Spinner fx:id="weekStart_0" editable="true" layoutX="104.0" layoutY="60.0" prefHeight="23.0"
-                 prefWidth="73.0"/>
-        <Label layoutX="194.0" layoutY="64.0" text="--"/>
-        <Spinner fx:id="weekEnd_0" editable="true" layoutX="222.0" layoutY="60.0" prefHeight="23.0"
-                 prefWidth="75.0"/>
-        <RadioButton fx:id="radioButtonWeek4" layoutX="14.0" layoutY="91.0" text="第"
-                     toggleGroup="$toggleGroupWeek"/>
-        <Spinner fx:id="weekStart_1" editable="true" layoutX="60.0" layoutY="88.0" prefHeight="23.0"
-                 prefWidth="80.0"/>
-        <Label layoutX="153.0" layoutY="92.0" text="周 的星期"/>
-        <Spinner fx:id="weekEnd_1" editable="true" layoutX="228.0" layoutY="88.0" prefHeight="23.0"
-                 prefWidth="80.0"/>
-        <RadioButton fx:id="radioButtonWeek2" layoutX="14.0" layoutY="38.0" mnemonicParsing="false"
-                     selected="true" text="不指定" toggleGroup="$toggleGroupWeek"/>
-        <RadioButton fx:id="radioButtonWeek5" layoutX="14.0" layoutY="123.0" mnemonicParsing="false"
-                     text="本月最后一星期" toggleGroup="$toggleGroupWeek"/>
-        <Spinner fx:id="weekStart_2" editable="true" layoutX="125.0" layoutY="120.0" prefHeight="23.0"
-                 prefWidth="80.0"/>
-        <RadioButton fx:id="radioButtonWeek6" layoutX="14.0" layoutY="154.0" text="指定"
-                     toggleGroup="$toggleGroupWeek"/>
-      </AnchorPane>
+      <VBox spacing="10">
+        <padding>
+          <Insets topRightBottomLeft="15"/>
+        </padding>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonWeek1" text="周 允许的通配符[, - * / L #]">
+            <toggleGroup>
+              <ToggleGroup fx:id="toggleGroupWeek"/>
+            </toggleGroup>
+          </RadioButton>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonWeek3" text="周期从星期" toggleGroup="$toggleGroupWeek"/>
+          <Spinner fx:id="weekStart_0" editable="true" prefWidth="80"/>
+          <Label text="--"/>
+          <Spinner fx:id="weekEnd_0" editable="true" prefWidth="80"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonWeek4" text="第" toggleGroup="$toggleGroupWeek"/>
+          <Spinner fx:id="weekStart_1" editable="true" prefWidth="80.0"/>
+          <Label layoutX="153.0" layoutY="92.0" text="周 的星期"/>
+          <Spinner fx:id="weekEnd_1" editable="true" prefWidth="80.0"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonWeek2" selected="true" text="不指定" toggleGroup="$toggleGroupWeek"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonWeek5" text="本月最后一星期" toggleGroup="$toggleGroupWeek"/>
+          <Spinner fx:id="weekStart_2" editable="true" prefWidth="80.0"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonWeek6" text="指定" toggleGroup="$toggleGroupWeek"/>
+        </HBox>
+        <FlowPane fx:id="flpWeeks" VBox.vgrow="ALWAYS" hgap="17" vgap="7">
+          <padding>
+            <Insets left="15"/>
+          </padding>
+        </FlowPane>
+      </VBox>
     </Tab>
     <Tab fx:id="tabYear" text="年" closable="false">
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-        <RadioButton fx:id="radioButtonYear1" layoutX="14.0" layoutY="14.0" mnemonicParsing="false"
-                     selected="true" text="不指定 允许的通配符[, - * /] 非必填">
-          <toggleGroup>
-            <ToggleGroup fx:id="toggleGroupYear"/>
-          </toggleGroup>
-        </RadioButton>
-        <RadioButton fx:id="radioButtonYear3" layoutX="14.0" layoutY="68.0" text="周期从"
-                     toggleGroup="$toggleGroupYear"/>
-        <RadioButton fx:id="radioButtonYear2" layoutX="14.0" layoutY="40.0" text="每年"
-                     toggleGroup="$toggleGroupYear"/>
-        <Spinner fx:id="yearStart_0" editable="true" layoutX="80.0" layoutY="65.0" prefHeight="23.0"
-                 prefWidth="73.0"/>
-        <Label layoutX="167.0" layoutY="69.0" text="--"/>
-        <Spinner fx:id="yearEnd_0" editable="true" layoutX="187.0" layoutY="65.0" prefHeight="23.0"
-                 prefWidth="75.0"/>
-      </AnchorPane>
+      <VBox spacing="10">
+        <padding>
+          <Insets topRightBottomLeft="15"/>
+        </padding>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonYear1" selected="true" text="不指定 允许的通配符[, - * /] 非必填">
+            <toggleGroup>
+              <ToggleGroup fx:id="toggleGroupYear"/>
+            </toggleGroup>
+          </RadioButton>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonYear3" text="周期从" toggleGroup="$toggleGroupYear"/>
+          <Spinner fx:id="yearStart_0" editable="true" prefWidth="80.0"/>
+          <Label text="--"/>
+          <Spinner fx:id="yearEnd_0" editable="true" prefWidth="80.0"/>
+        </HBox>
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <RadioButton fx:id="radioButtonYear2" text="每年" toggleGroup="$toggleGroupYear"/>
+        </HBox>
+      </VBox>
     </Tab>
   </TabPane>
 
   <TitledPane animated="false" collapsible="false" text="表达式">
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="138.0" prefWidth="730.0">
-      <Label layoutX="14.0" layoutY="28.0" text="表达式字段："/>
-      <Label layoutX="110.0" layoutY="4.0" text="秒"/>
-      <Label layoutX="186.0" layoutY="4.0" text="分钟"/>
-      <Label layoutX="267.0" layoutY="4.0" text="小时"/>
-      <Label layoutX="355.0" layoutY="4.0" text="日"/>
-      <Label layoutX="435.0" layoutY="4.0" text="月"/>
-      <Label layoutX="512.0" layoutY="4.0" text="星期"/>
-      <Label layoutX="602.0" layoutY="4.0" text="年"/>
-      <TextField fx:id="jTF_Cron_Second" disable="true" layoutX="83.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0" text="*"/>
-      <TextField fx:id="jTF_Cron_Minute" disable="true" layoutX="163.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0" text="*"/>
-      <TextField fx:id="jTF_Cron_Hour" disable="true" layoutX="245.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0" text="*"/>
-      <TextField fx:id="jTF_Cron_Day" disable="true" layoutX="325.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0" text="*"/>
-      <TextField fx:id="jTF_Cron_Month" disable="true" layoutX="405.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0" text="*"/>
-      <TextField fx:id="jTF_Cron_Week" disable="true" layoutX="488.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0" text="?"/>
-      <TextField fx:id="jTF_Cron_Year" disable="true" layoutX="572.0" layoutY="24.0" prefHeight="23.0"
-                 prefWidth="71.0"/>
-      <Label layoutX="14.0" layoutY="57.0" text="Cron表达式："/>
-      <TextField fx:id="jTF_Cron_Exp" layoutX="99.0" layoutY="53.0" prefHeight="23.0" prefWidth="426.0"
-                 text="* * * * * ?"/>
-      <Button fx:id="button_Parse" layoutX="587.0" layoutY="53.0" mnemonicParsing="false"
-              onAction="#parseActionPerformed" text="反解析到UI"/>
-      <Label layoutX="14.0" layoutY="82.0" text="开始时间："/>
-      <TextField fx:id="jTF_Schedule_Start" disable="true" layoutX="83.0" layoutY="83.0" prefHeight="23.0"
-                 prefWidth="127.0" text="2017-10-08 12:23:56"/>
-      <Label layoutX="100.0" layoutY="110.0" text="最近六次运行时间："/>
-      <Button fx:id="copyExpButton" layoutX="532.0" layoutY="53.0" onAction="#copyExpAction"
-              text="Copy"/>
-    </AnchorPane>
+    <VBox minHeight="330" spacing="15">
+      <GridPane hgap="5" vgap="5">
+        <Label text="秒" GridPane.halignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Label text="分" GridPane.halignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="时" GridPane.halignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <Label text="天" GridPane.halignment="CENTER" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        <Label text="月" GridPane.halignment="CENTER" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+        <Label text="周" GridPane.halignment="CENTER" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+        <Label text="年" GridPane.halignment="CENTER" GridPane.columnIndex="6" GridPane.rowIndex="0"/>
+        <TextField fx:id="jTF_Cron_Second"
+                   GridPane.columnIndex="0" GridPane.rowIndex="1" editable="false" prefWidth="70.0" text="*"/>
+        <TextField fx:id="jTF_Cron_Minute"
+                   GridPane.columnIndex="1" GridPane.rowIndex="1" editable="false" prefWidth="70.0" text="*"/>
+        <TextField fx:id="jTF_Cron_Hour"
+                   GridPane.columnIndex="2" GridPane.rowIndex="1" editable="false" prefWidth="70.0" text="*"/>
+        <TextField fx:id="jTF_Cron_Day"
+                   GridPane.columnIndex="3" GridPane.rowIndex="1" editable="false" prefWidth="70.0" text="*"/>
+        <TextField fx:id="jTF_Cron_Month"
+                   GridPane.columnIndex="4" GridPane.rowIndex="1" editable="false" prefWidth="70.0" text="*"/>
+        <TextField fx:id="jTF_Cron_Week"
+                   GridPane.columnIndex="5" GridPane.rowIndex="1" editable="false" prefWidth="70.0" text="?"/>
+        <TextField fx:id="jTF_Cron_Year"
+                   GridPane.columnIndex="6" GridPane.rowIndex="1" editable="false" prefWidth="70.0"/>
+      </GridPane>
+      <VBox spacing="5">
+        <Label text="完整表达式："/>
+        <TextArea fx:id="jTF_Cron_Exp" minHeight="50" prefHeight="50" text="* * * * * ?"/>
+        <HBox spacing="5">
+          <Button fx:id="copyExpButton" onAction="#copyExpAction" text="复制"/>
+          <Button fx:id="button_Parse" onAction="#parseActionPerformed" text="反解析到UI"/>
+        </HBox>
+      </VBox>
+      <VBox spacing="5">
+        <HBox alignment="BASELINE_LEFT" spacing="5">
+          <Label text="从"/>
+          <TextField editable="false" prefWidth="170" fx:id="jTF_Schedule_Start"/>
+          <Label text="开始的后面六次运行时间："/>
+        </HBox>
+        <TextArea fx:id="jTA_Schedule_Next" editable="false" minHeight="70" prefHeight="70"/>
+      </VBox>
+    </VBox>
   </TitledPane>
-
-  <TextArea fx:id="jTA_Schedule_Next" editable="false" layoutX="214.0" layoutY="392.0" prefHeight="44.0"
-            prefWidth="451.0"/>
 </VBox>

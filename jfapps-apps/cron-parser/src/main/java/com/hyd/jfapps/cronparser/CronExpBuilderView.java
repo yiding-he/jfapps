@@ -256,7 +256,7 @@ public abstract class CronExpBuilderView implements Initializable {
     protected TextField jTF_Cron_Year;
 
     @FXML
-    protected TextField jTF_Cron_Exp;
+    protected TextArea jTF_Cron_Exp;
 
     @FXML
     protected Button button_Parse;

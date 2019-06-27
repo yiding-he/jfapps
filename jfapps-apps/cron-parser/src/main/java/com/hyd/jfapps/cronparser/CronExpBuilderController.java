@@ -8,7 +8,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -19,10 +18,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static com.hyd.jfapps.cronparser.JavaFxViewUtil.setSpinnerValueFactory;
 
@@ -42,6 +39,10 @@ public class CronExpBuilderController extends CronExpBuilderView {
     public FlowPane flpHours;
 
     public FlowPane flpDays;
+
+    public FlowPane flpMonths;
+
+    public FlowPane flpWeeks;
 
     private CheckBox[] secondCheckBox = new CheckBox[60];
 
@@ -121,25 +122,22 @@ public class CronExpBuilderController extends CronExpBuilderView {
             flpDays.getChildren().add(dayCheckBox[i]);
         }
 
-        for (int i = 0; i < 60; i++) {
-            if (i < 12) {
-                monthCheckBox[i] = new CheckBox(String.format("%2d", i + 1));
-                monthCheckBox[i].setLayoutX(32 + i % 12 * 50);
-                monthCheckBox[i].setLayoutY(146);
-                ((AnchorPane) tabMonth.getContent()).getChildren().add(monthCheckBox[i]);
-            }
-            if (i < 7) {
-                weekCheckBox[i] = new CheckBox(String.format("%2d", i + 1));
-                weekCheckBox[i].setLayoutX(32 + i % 10 * 60);
-                weekCheckBox[i].setLayoutY(180 + i / 10 * 20);
-                ((AnchorPane) tabWeek.getContent()).getChildren().add(weekCheckBox[i]);
-            }
+        for (int i = 0; i < 12; i++) {
+            monthCheckBox[i] = new CheckBox(String.format("%2d", i + 1));
+            flpMonths.getChildren().add(monthCheckBox[i]);
         }
+
+        for (int i = 0; i < 7; i++) {
+            weekCheckBox[i] = new CheckBox(String.format("%2d", i + 1));
+            flpWeeks.getChildren().add(weekCheckBox[i]);
+        }
+
+        jTF_Schedule_Start.setText(DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
     }
 
     private void initEvent() {
-        for (int i = 0; i < cronTextFields.length; i++) {
-            cronTextFields[i].textProperty().addListener(getChangeListener());
+        for (TextField cronTextField : cronTextFields) {
+            cronTextField.textProperty().addListener(getChangeListener());
         }
         try {
             for (int i = 0; i < typeNameString.length - 1; i++) {
@@ -207,30 +205,26 @@ public class CronExpBuilderController extends CronExpBuilderView {
         String checkType = "Year";
         ToggleGroup toggleGroup = (ToggleGroup) FieldUtils.readField(this, "toggleGroup" + checkType, true);
         for (Toggle toggle : toggleGroup.getToggles()) {
-            ((RadioButton) toggle).selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @SuppressWarnings("unchecked")
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    if (!newValue) {
-                        return;
+            toggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue) {
+                    return;
+                }
+                RadioButton radioButton = (RadioButton) ((BooleanProperty) observable).getBean();
+                try {
+                    TextField textField = jTF_Cron_Year;
+                    if (radioButton == toggleGroup.getToggles().get(0)) {
+                        textField.setText("");
+                    } else if (radioButton == toggleGroup.getToggles().get(1)) {
+                        Spinner<Integer> spinnerStart = (Spinner<Integer>) FieldUtils.readField(
+                                CronExpBuilderController.this, checkType.toLowerCase() + "Start_0", true);
+                        Spinner<Integer> spinnerEnd = (Spinner<Integer>) FieldUtils
+                                .readField(CronExpBuilderController.this, checkType.toLowerCase() + "End_0", true);
+                        String string = spinnerStart.getValue() + "-" + spinnerEnd.getValue();
+                        textField.setText(string);
+                    } else if (radioButton == toggleGroup.getToggles().get(2)) {
+                        textField.setText("*");
                     }
-                    RadioButton radioButton = (RadioButton) ((BooleanProperty) observable).getBean();
-                    try {
-                        TextField textField = jTF_Cron_Year;
-                        if (radioButton == toggleGroup.getToggles().get(0)) {
-                            textField.setText("");
-                        } else if (radioButton == toggleGroup.getToggles().get(1)) {
-                            Spinner<Integer> spinnerStart = (Spinner<Integer>) FieldUtils.readField(
-                                    CronExpBuilderController.this, checkType.toLowerCase() + "Start_0", true);
-                            Spinner<Integer> spinnerEnd = (Spinner<Integer>) FieldUtils
-                                    .readField(CronExpBuilderController.this, checkType.toLowerCase() + "End_0", true);
-                            String string = spinnerStart.getValue() + "-" + spinnerEnd.getValue();
-                            textField.setText(string);
-                        } else if (radioButton == toggleGroup.getToggles().get(2)) {
-                            textField.setText("*");
-                        }
-                    } catch (Exception e) {
-                    }
+                } catch (Exception e) {
                 }
             });
         }
@@ -489,4 +483,5 @@ public class CronExpBuilderController extends CronExpBuilderView {
         final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard(); // 获得系统剪贴板
         clipboard.setContents(new StringSelection(jTF_Cron_Exp.getText()), null);
     }
+
 }
