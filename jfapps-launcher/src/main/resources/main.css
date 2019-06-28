@@ -1,0 +1,10 @@
+.app-card {
+  -fx-border-width: 1;
+  -fx-border-color: transparent;
+  -fx-border-style: solid;
+  -fx-padding: 15 20;
+  -fx-background-color: #FFF;
+  -fx-background-radius: 6;
+  -fx-border-radius: 6;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 6, 0, 1, 3);
+}

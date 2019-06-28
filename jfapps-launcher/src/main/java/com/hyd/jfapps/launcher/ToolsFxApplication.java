@@ -3,13 +3,26 @@ package com.hyd.jfapps.launcher;
 import com.hyd.jfapps.appbase.JfappsApp;
 import com.hyd.jfapps.launcher.appmanager.AppContainer;
 import com.hyd.jfapps.launcher.appmanager.AppManager;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Control;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitMenuButton;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -17,11 +30,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Slf4j
 public class ToolsFxApplication extends Application {
@@ -44,14 +52,18 @@ public class ToolsFxApplication extends Application {
         double width = Math.max(visualBounds.getWidth() - 200, 1000);
         double height = Math.max(visualBounds.getHeight() - 200, 600);
 
+        Scene scene = new Scene(root, width, height);
+        scene.getStylesheets().add("/main.css");
+
         primaryStage.setTitle("小工具集合");
-        primaryStage.setScene(new Scene(root, width, height));
+        primaryStage.setScene(scene);
         primaryStage.setX(visualBounds.getMinX() + (visualBounds.getWidth() - width) / 2);
         primaryStage.setY(visualBounds.getMinY() + (visualBounds.getHeight() - height) / 2);
 
         primaryStage.setOnShown(event -> {
             AppManager.init();
             tabPane.getTabs().add(mainTab(tabPane));
+            root.requestFocus();
         });
 
         primaryStage.show();
@@ -93,8 +105,9 @@ public class ToolsFxApplication extends Application {
 
         FlowPane flowPane = new FlowPane();
         flowPane.setStyle("-fx-border-style: none");
-        flowPane.setHgap(40);
-        flowPane.setVgap(40);
+        flowPane.setPadding(new Insets(0, 0, 15, 0));  // 以便容纳阴影
+        flowPane.setHgap(30);
+        flowPane.setVgap(30);
 
         List<AppContainer> containers = AppManager.getAppContainers();
         for (AppContainer container : containers) {
@@ -130,10 +143,12 @@ public class ToolsFxApplication extends Application {
         );
         vBox.setPadding(new Insets(5, 0, 0, 0));
 
-        return new HBox(10,
+        HBox appPane = new HBox(10,
             Icons.iconView(container.getIcon(), 64),
             vBox
         );
+        appPane.getStyleClass().add("app-card");
+        return appPane;
     }
 
     private SplitMenuButton createAppButton(TabPane tabPane, AppContainer container) {
