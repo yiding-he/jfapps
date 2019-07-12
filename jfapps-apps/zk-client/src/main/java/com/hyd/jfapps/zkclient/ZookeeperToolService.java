@@ -13,10 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
@@ -36,8 +33,6 @@ import org.apache.zookeeper.data.Stat;
  * @date: 2019/4/8 17:00
  */
 
-@Getter
-@Setter
 @Slf4j
 public class ZookeeperToolService {
 
@@ -49,21 +44,31 @@ public class ZookeeperToolService {
 
     private Map<String, IZkDataListener> dataListeners = new HashMap<>();
 
+    private Runnable onConnected;
+
+    private Runnable onDisconnected;
+
     public ZookeeperToolService(ZookeeperToolController controller) {
         this.controller = controller;
     }
 
-    public void initZkClient(String serverAddress, int timeoutMillis) {
-        zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
+    private void runTask(Runnable runnable) {
+        if (runnable != null) {
+            runnable.run();
+        }
     }
 
-    private void addNodeTree(String path, TreeItem<String> parent) {
-        List<String> list = getZkChildren(getNodePath(parent));
-        for (String name : list) {
-            TreeItem<String> child = new TreeItem<>(name);
-            Platform.runLater(() -> parent.getChildren().add(child));
-            addNodeTree(appendIfMissing(path, "/", "/") + name, child);
-        }
+    public void initZkClient(String serverAddress, int timeoutMillis) {
+        zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
+        runTask(onConnected);
+    }
+
+    public void setOnConnected(Runnable onConnected) {
+        this.onConnected = onConnected;
+    }
+
+    public void setOnDisconnected(Runnable onDisconnected) {
+        this.onDisconnected = onDisconnected;
     }
 
     private List<String> getZkChildren(String path) {
@@ -89,11 +94,16 @@ public class ZookeeperToolService {
     }
 
     public void nodeSelectionChanged(TreeItem<String> selectedItem) {
+        if (selectedItem == null) {
+            return;
+        }
+
         String nodePath = this.getNodePath(selectedItem);
         if (!zkClient.exists(nodePath)) {
             AlertDialog.error("节点不存在", "节点 '" + nodePath + "' 不存在");
             return;
         }
+
         controller.getNodeDataValueTextArea().setText(zkClient.readData(nodePath));
         Map.Entry<List<ACL>, Stat> aclsEntry = zkClient.getAcl(nodePath);
         Stat stat = aclsEntry.getValue();
@@ -135,12 +145,20 @@ public class ZookeeperToolService {
         }
     }
 
-    public void disconnectOnAction() {
+    public boolean isConnected() {
+        return this.zkClient != null;
+    }
+
+    public void disconnect() {
         if (zkClient != null) {
             zkClient.close();
             zkClient = null;
+            runTask(onDisconnected);
         }
-        controller.getNodeTreeView().getRoot().getChildren().clear();
+
+        if (controller.getNodeTreeView().getRoot() != null) {
+            controller.getNodeTreeView().setRoot(null);
+        }
     }
 
     public void deleteNodeOnAction() {

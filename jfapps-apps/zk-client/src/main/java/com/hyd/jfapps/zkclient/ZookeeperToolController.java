@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.input.MouseButton;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,30 +20,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ZookeeperToolController extends ZookeeperToolView {
 
-    public Label lblStatus;
-
     private ZookeeperToolService zookeeperToolService = new ZookeeperToolService(this);
 
     private BackgroundTask openConnectionTask = BackgroundTask
         .runTask(() -> zookeeperToolService.initZkClient(
             zkServersTextField.getText(),
-            connectionTimeoutSpinner.getValue()
+            cmbConnTimeout.getValue() * 1000
         ))
         .whenBeforeStart(() -> {
             connectButton.setDisable(true);
-            nodeTreeView.setDisable(true);
             lblStatus.setText("连接中...");
         })
         .whenTaskSuccess(() -> {
             lblStatus.setText("已连接");
+            connectButton.setText("关闭连接");
             zookeeperToolService.setupTree();
-            nodeTreeView.setDisable(false);
         })
         .whenTaskFail(e -> {
             AlertDialog.error("连接失败", e);
             lblStatus.setText("连接失败");
+            connectButton.setText("连接服务器");
         })
-        .whenTaskFinish(() -> connectButton.setDisable(false));
+        .whenTaskFinish(() ->
+            connectButton.setDisable(false)
+        );
 
     private ContextMenu treeContextMenu = contextMenu(
         menuItem("添加子节点", zookeeperToolService::addNodeOnAction),
@@ -61,10 +60,16 @@ public class ZookeeperToolController extends ZookeeperToolView {
     }
 
     private void initView() {
-        JavaFxViewUtil.setSpinnerValueFactory(connectionTimeoutSpinner, 0, Integer.MAX_VALUE, 30000);
-
         Optional.ofNullable(System.getProperty("server"))
             .ifPresent(server -> zkServersTextField.setText(server));
+
+        zookeeperToolService.setOnConnected(() -> {
+            mainPane.setDisable(false);
+        });
+
+        zookeeperToolService.setOnDisconnected(() -> {
+            mainPane.setDisable(true);
+        });
     }
 
     private void initEvent() {
@@ -82,13 +87,13 @@ public class ZookeeperToolController extends ZookeeperToolView {
     }
 
     @FXML
-    private void connectOnAction() {
-        openConnectionTask.start();
-    }
-
-    @FXML
-    private void disconnectOnAction() {
-        zookeeperToolService.disconnectOnAction();
+    private void connectButtonClicked() {
+        if (zookeeperToolService.isConnected()) {
+            zookeeperToolService.disconnect();
+            connectButton.setText("连接服务器");
+        } else {
+            openConnectionTask.start();
+        }
     }
 
     @FXML

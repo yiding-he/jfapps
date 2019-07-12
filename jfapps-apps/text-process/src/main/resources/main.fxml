@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<SplitPane dividerPositions="0.30529172320217096" stylesheets="@default.css"
+    xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.hyd.jfapps.textprocess.MainController">
+    <VBox>
+        <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+        </padding>
+        <Label text="处理步骤：">
+            <padding>
+                <Insets bottom="5.0" right="5.0" top="5.0"/>
+            </padding>
+        </Label>
+        <ListView fx:id="lvProcess" prefWidth="200.0" VBox.vgrow="ALWAYS"/>
+        <HBox alignment="BASELINE_LEFT" prefWidth="200.0" spacing="10.0">
+            <padding>
+                <Insets bottom="5.0" top="5.0"/>
+            </padding>
+            <MenuButton mnemonicParsing="false" popupSide="TOP" text="添加处理步骤">
+                <items>
+                    <Menu mnemonicParsing="false" style="-fx-pref-width: 100;" text="转码">
+                        <MenuItem mnemonicParsing="false" text="URL 转码"/>
+                    </Menu>
+                    <Menu mnemonicParsing="false" text="加密">
+                        <MenuItem mnemonicParsing="false" text="Action 1"/>
+                    </Menu>
+                    <Menu mnemonicParsing="false" text="哈希">
+                        <MenuItem mnemonicParsing="false" text="MD5 哈希"/>
+                        <MenuItem mnemonicParsing="false" text="SHA1 哈希"/>
+                    </Menu>
+                </items>
+            </MenuButton>
+            <Button disable="true" mnemonicParsing="false" text="删除"/>
+        </HBox>
+    </VBox>
+    <ScrollPane fx:id="processPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: transparent;"/>
+</SplitPane>

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.Integer?>
 <?import java.net.URL?>
+<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -30,30 +32,39 @@
         </BorderPane.margin>
         <Label text="服务器："/>
         <TextField HBox.hgrow="ALWAYS" fx:id="zkServersTextField" text="localhost:2181"/>
-        <Label text="连接超时(ms)"/>
-        <Spinner fx:id="connectionTimeoutSpinner" editable="true" prefWidth="84.0"/>
-        <Button fx:id="connectButton" onAction="#connectOnAction" text="连接"/>
-        <Button fx:id="disconnectButton" onAction="#disconnectOnAction" text="关闭"/>
+        <Label text="连接超时(秒)"/>
+        <ComboBox fx:id="cmbConnTimeout">
+          <items>
+            <FXCollections fx:factory="observableArrayList">
+              <Integer fx:value="10" />
+              <Integer fx:value="30" />
+              <Integer fx:value="60" />
+              <Integer fx:value="120" />
+            </FXCollections>
+          </items>
+          <value>
+            <Integer fx:value="60" />
+          </value>
+        </ComboBox>
+        <Button fx:id="connectButton" onAction="#connectButtonClicked" text="连接服务器" prefWidth="100"/>
       </HBox>
     </top>
     <center>
-      <SplitPane dividerPositions="0.34560906515580736" BorderPane.alignment="CENTER">
-        <TreeView fx:id="nodeTreeView" disable="true"/>
+      <SplitPane dividerPositions="0.34560906515580736" fx:id="mainPane" disable="true">
+        <TreeView fx:id="nodeTreeView"/>
         <TabPane tabClosingPolicy="UNAVAILABLE">
           <Tab text="Node Data">
             <BorderPane>
               <top>
-                <HBox alignment="CENTER_LEFT" spacing="10.0" BorderPane.alignment="CENTER">
-                  <BorderPane.margin>
-                    <Insets bottom="5.0" top="5.0"/>
-                  </BorderPane.margin>
-                  <Button fx:id="nodeDataSaveButton" mnemonicParsing="false"
-                    onAction="#nodeDataSaveOnAction"
-                    text="保存"/>
+                <HBox alignment="BASELINE_LEFT" spacing="10.0">
+                  <padding>
+                    <Insets topRightBottomLeft="10"/>
+                  </padding>
+                  <Button onAction="#nodeDataSaveOnAction" text="保存"/>
                 </HBox>
               </top>
               <center>
-                <TextArea fx:id="nodeDataValueTextArea" BorderPane.alignment="CENTER"/>
+                <TextArea fx:id="nodeDataValueTextArea" wrapText="true" style="-fx-font-family: DialogInput"/>
               </center>
             </BorderPane>
           </Tab>

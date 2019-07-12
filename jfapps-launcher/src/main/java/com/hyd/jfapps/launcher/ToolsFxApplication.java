@@ -137,7 +137,7 @@ public class ToolsFxApplication extends Application {
     }
 
     private Parent createAppPane(TabPane tabPane, AppContainer container) {
-        VBox vBox = new VBox(5,
+        VBox vBox = new VBox(10,
             new Label(container.getAppName()),
             createAppButton(tabPane, container)
         );
