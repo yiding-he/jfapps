@@ -1,50 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-
-<SplitPane dividerPositions="0.30529172320217096" stylesheets="@default.css"
+<SplitPane dividerPositions="0.5"
     xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1"
+    prefWidth="700" prefHeight="500" stylesheets="@default.css"
     fx:controller="com.hyd.jfapps.textprocess.MainController">
-    <VBox>
-        <padding>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-        </padding>
-        <Label text="处理步骤：">
-            <padding>
-                <Insets bottom="5.0" right="5.0" top="5.0"/>
-            </padding>
-        </Label>
-        <ListView fx:id="lvProcess" prefWidth="200.0" VBox.vgrow="ALWAYS"/>
-        <HBox alignment="BASELINE_LEFT" prefWidth="200.0" spacing="10.0">
-            <padding>
-                <Insets bottom="5.0" top="5.0"/>
-            </padding>
-            <MenuButton mnemonicParsing="false" popupSide="TOP" text="添加处理步骤">
-                <items>
-                    <Menu mnemonicParsing="false" style="-fx-pref-width: 100;" text="转码">
-                        <MenuItem mnemonicParsing="false" text="URL 转码"/>
-                    </Menu>
-                    <Menu mnemonicParsing="false" text="加密">
-                        <MenuItem mnemonicParsing="false" text="Action 1"/>
-                    </Menu>
-                    <Menu mnemonicParsing="false" text="哈希">
-                        <MenuItem mnemonicParsing="false" text="MD5 哈希"/>
-                        <MenuItem mnemonicParsing="false" text="SHA1 哈希"/>
-                    </Menu>
-                </items>
-            </MenuButton>
-            <Button disable="true" mnemonicParsing="false" text="删除"/>
+
+    <fx:define>
+        <Insets topRightBottomLeft="7" fx:id="padding"/>
+    </fx:define>
+
+    <VBox spacing="7" padding="$padding">
+        <HBox alignment="BASELINE_LEFT" spacing="7">
+            <Label text="在下面的文本框中粘贴或"/>
+            <Button text="打开文件..." fx:id="btnOpenFile"/>
         </HBox>
+        <TextArea VBox.vgrow="ALWAYS" style="-fx-font-family: DialogInput" wrapText="true"/>
     </VBox>
-    <ScrollPane fx:id="processPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: transparent;"/>
+    <VBox>
+        <Accordion expandedPane="$hashPane" prefHeight="230">
+            <panes>
+                <fx:define>
+                    <ToggleGroup fx:id="tgConverts"/>
+                    <ToggleGroup fx:id="tgEncrypts"/>
+                    <ToggleGroup fx:id="tgHashes"/>
+                </fx:define>
+                <TitledPane text="转码" animated="false" fx:id="convertPane">
+                    <HBox spacing="7">
+                        <RadioButton toggleGroup="$tgConverts" text="URL 编码"/>
+                        <RadioButton toggleGroup="$tgConverts" text="HEX 编码"/>
+                    </HBox>
+                </TitledPane>
+                <TitledPane text="加密" animated="false">
+                    <TabPane tabClosingPolicy="UNAVAILABLE">
+                        <Tab text="DES 加密">
+                            <HBox alignment="BASELINE_LEFT" spacing="7">
+                                <padding>
+                                    <Insets topRightBottomLeft="7"/>
+                                </padding>
+                                <Label text="加密密钥："/>
+                                <TextField HBox.hgrow="ALWAYS"/>
+                                <Button text="加密"/>
+                            </HBox>
+                        </Tab>
+                    </TabPane>
+                </TitledPane>
+                <TitledPane text="哈希" animated="false" fx:id="hashPane">
+                    <ScrollPane fitToWidth="true">
+                        <VBox spacing="7" padding="$padding">
+                            <FlowPane hgap="7" vgap="7">
+                                <RadioButton toggleGroup="$tgHashes" text="MD5"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-1"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-224"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-256"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-384"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-512"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-512/224"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA-512/256"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA3-224"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA3-256"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA3-384"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHA3-512"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHAKE128"/>
+                                <RadioButton toggleGroup="$tgHashes" text="SHAKE256"/>
+                                <RadioButton toggleGroup="$tgHashes" text="Keccak-256"/>
+                            </FlowPane>
+                            <Button text="转换"/>
+                        </VBox>
+                    </ScrollPane>
+                </TitledPane>
+            </panes>
+        </Accordion>
+        <VBox spacing="7" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets topRightBottomLeft="7"/>
+            </padding>
+            <Label text="输出结果"/>
+            <TextArea VBox.vgrow="ALWAYS" style="-fx-font-family: DialogInput" wrapText="true" editable="false"/>
+        </VBox>
+    </VBox>
 </SplitPane>
