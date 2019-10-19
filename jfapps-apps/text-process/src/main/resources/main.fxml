@@ -30,7 +30,8 @@
             <Label text="在下面的文本框中粘贴或"/>
             <Button text="打开文件..." fx:id="btnOpenFile"/>
         </HBox>
-        <TextArea VBox.vgrow="ALWAYS" style="-fx-font-family: DialogInput" wrapText="true"/>
+        <TextArea fx:id="txtOriginText"
+            VBox.vgrow="ALWAYS" style="-fx-font-family: DialogInput" wrapText="true"/>
     </VBox>
     <VBox>
         <Accordion expandedPane="$hashPane" prefHeight="230">

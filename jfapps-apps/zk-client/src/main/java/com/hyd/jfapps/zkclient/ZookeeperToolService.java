@@ -7,17 +7,10 @@ import com.hyd.fx.components.LazyLoadingTreeItem;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javafx.scene.control.TreeItem;
 import lombok.extern.slf4j.Slf4j;
-import org.I0Itec.zkclient.IZkChildListener;
-import org.I0Itec.zkclient.IZkDataListener;
-import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.*;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.apache.commons.lang3.StringUtils;
@@ -101,6 +94,9 @@ public class ZookeeperToolService {
         String nodePath = this.getNodePath(selectedItem);
         if (!zkClient.exists(nodePath)) {
             AlertDialog.error("节点不存在", "节点 '" + nodePath + "' 不存在");
+            TreeItem<String> parent = selectedItem.getParent();
+            parent.getChildren().remove(selectedItem);
+            parent.setExpanded(false);
             return;
         }
 
