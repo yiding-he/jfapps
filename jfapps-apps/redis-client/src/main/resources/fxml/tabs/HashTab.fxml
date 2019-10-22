@@ -34,7 +34,7 @@
 
             <HBox spacing="10" alignment="BASELINE_LEFT">
                 <TextField fx:id="txtHashFieldPattern"/>
-                <Button text="%word_search" styleClass="narrowButton" onAction="#searchFieldPattern"/>
+                <Button text="%word_search" styleClass="narrowButton" fx:id="searchButton" onAction="#searchFieldPattern"/>
                 <Label text="0" fx:id="lblHashSize"/>
                 <Button text="%hash_op_add_value" onAction="#addValue"/>
             </HBox>
