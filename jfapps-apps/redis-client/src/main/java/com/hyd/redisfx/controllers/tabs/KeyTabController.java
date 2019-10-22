@@ -5,6 +5,8 @@ import com.hyd.redisfx.Fx;
 import com.hyd.redisfx.controllers.client.JedisManager;
 import com.hyd.redisfx.controllers.dialogs.SetExpiryDialog;
 import com.hyd.redisfx.event.EventType;
+import com.hyd.redisfx.fx.ProgressDialog;
+import com.hyd.redisfx.fx.ProgressDialog.ProgressTask;
 import com.hyd.redisfx.i18n.I18n;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -143,24 +145,41 @@ public class KeyTabController extends AbstractTabController {
         items.clear();
 
         if (pattern.trim().length() > 0) {
-            try (Jedis jedis = JedisManager.getJedis()) {
-                String cursor = ScanParams.SCAN_POINTER_START;
-                ScanParams scanParams = new ScanParams().match(pattern);
-                ScanResult<String> result;
-                do {
-                    result = jedis.scan(cursor, scanParams);
-                    cursor = result.getStringCursor();
-
-                    result.getResult().forEach(key -> {
-                        String type = jedis.type(key);
-                        int length = getLength(key, type, jedis);
-                        String expireAt = getExpireAt(key, jedis);
-                        items.add(new KeyItem(key, type, length, expireAt));
-                    });
-                } while (!result.isCompleteIteration() && items.size() < limit);
-            }
+            searchKey(pattern, limit, items);
         }
     }
+
+    private void searchKey(String pattern, int limit, ObservableList<KeyItem> items) {
+        ProgressDialog progressDialog = new ProgressDialog(
+            this.tblKeys.getScene().getWindow(),
+            new ProgressTask() {
+                @Override
+                public void run(StringProperty progressMessage) throws Exception {
+                    try (Jedis jedis = JedisManager.getJedis()) {
+                        String cursor = ScanParams.SCAN_POINTER_START;
+                        ScanParams scanParams = new ScanParams().match(pattern).count(100);
+                        ScanResult<String> result;
+                        do {
+                            result = jedis.scan(cursor, scanParams);
+                            cursor = result.getStringCursor();
+
+                            result.getResult().forEach(key -> {
+                                String type = jedis.type(key);
+                                int length = getLength(key, type, jedis);
+                                String expireAt = getExpireAt(key, jedis);
+                                items.add(new KeyItem(key, type, length, expireAt));
+                            });
+
+                            progressMessage.setValue("已找到 " + items.size() + " 条记录。");
+                        } while (
+                            !result.isCompleteIteration() && items.size() < limit && !canceled);
+                    }
+                }
+            }, "正在搜索...");
+
+        progressDialog.show();
+    }
+
 
     private static String getExpireAt(String key, Jedis jedis) {
         Long seconds = jedis.ttl(key);
@@ -198,11 +217,11 @@ public class KeyTabController extends AbstractTabController {
 
         String message = I18n.getString("msg_confirm_delete_key");
         new Alert(Alert.AlertType.WARNING, message, ButtonType.YES, ButtonType.NO)
-                .showAndWait().ifPresent(result -> {
+            .showAndWait().ifPresent(result -> {
             if (result == ButtonType.YES) {
                 JedisManager.withJedis(jedis ->
-                        selectedItems.forEach(item ->
-                                jedis.del(item.getKey())));
+                    selectedItems.forEach(item ->
+                        jedis.del(item.getKey())));
             }
         });
 
@@ -211,16 +230,16 @@ public class KeyTabController extends AbstractTabController {
 
     public void mnuCopyKey() {
         Optional.ofNullable(tblKeys.getSelectionModel().getSelectedItem())
-                .ifPresent(keyItem -> Fx.copyText(keyItem.getKey()));
+            .ifPresent(keyItem -> Fx.copyText(keyItem.getKey()));
     }
 
     public void mnuSetExpiry() {
         Optional.ofNullable(tblKeys.getSelectionModel().getSelectedItem())
-                .ifPresent(keyItem -> {
-                    String key = keyItem.getKey();
-                    int ttl = JedisManager.usingJedis(jedis -> jedis.ttl(key).intValue());
-                    new SetExpiryDialog(keyItem, ttl).show();
-                });
+            .ifPresent(keyItem -> {
+                String key = keyItem.getKey();
+                int ttl = JedisManager.usingJedis(jedis -> jedis.ttl(key).intValue());
+                new SetExpiryDialog(keyItem, ttl).show();
+            });
     }
 
     //////////////////////////////////////////////////////////////
@@ -295,7 +314,7 @@ public class KeyTabController extends AbstractTabController {
 
         public void refreshExpiry() {
             JedisManager.withJedis(jedis ->
-                    setExpireAt(KeyTabController.getExpireAt(getKey(), jedis)));
+                setExpireAt(KeyTabController.getExpireAt(getKey(), jedis)));
         }
     }
 }
