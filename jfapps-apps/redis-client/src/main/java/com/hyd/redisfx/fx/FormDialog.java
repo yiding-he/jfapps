@@ -21,6 +21,9 @@ import javafx.stage.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
+import static javafx.scene.layout.Region.USE_PREF_SIZE;
+
 /**
  * (description)
  * created at 2017/7/12
@@ -99,7 +102,8 @@ public abstract class FormDialog extends Stage {
         });
 
         ColumnConstraints titleCC = new ColumnConstraints();
-        titleCC.setPrefWidth(100);
+        titleCC.setPrefWidth(USE_COMPUTED_SIZE);
+        titleCC.setMinWidth(USE_COMPUTED_SIZE);
 
         ColumnConstraints valueCC = new ColumnConstraints();
         valueCC.setFillWidth(true);

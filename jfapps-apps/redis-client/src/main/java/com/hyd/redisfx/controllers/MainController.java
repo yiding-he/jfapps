@@ -9,6 +9,9 @@ import com.hyd.redisfx.controllers.tabs.Tabs;
 import com.hyd.redisfx.event.EventType;
 import com.hyd.redisfx.i18n.I18n;
 import javafx.event.ActionEvent;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -26,12 +29,34 @@ public class MainController {
 
     public TabPane tabs;
 
+    public Menu mnuCurrentDatabase;
+
     private Stage primaryStage;
 
     public void initialize() {
         App.setMainController(this);
         Tabs.setTabs(tabs);
         initializeTabs();
+        initDatabaseMenuItems();
+    }
+
+    private void initDatabaseMenuItems() {
+        for (int i = 0; i < 16; i++) {
+            CheckMenuItem item = new CheckMenuItem(String.valueOf(i));
+            final int index = i;
+            item.setOnAction(event -> JedisManager.setCurrentDatabase(index));
+            mnuCurrentDatabase.getItems().add(item);
+        }
+
+        App.getEventBus().on(EventType.DatabaseChanged, event -> {
+            int currentDatabase = JedisManager.getCurrentDatabase();
+            for (int i = 0; i < mnuCurrentDatabase.getItems().size(); i++) {
+                CheckMenuItem menuItem = (CheckMenuItem) mnuCurrentDatabase.getItems().get(i);
+                menuItem.setSelected(i == currentDatabase);
+            }
+        });
+
+        JedisManager.setCurrentDatabase(0);
     }
 
     public void setPrimaryStage(Stage primaryStage) {

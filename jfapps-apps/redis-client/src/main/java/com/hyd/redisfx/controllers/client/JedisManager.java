@@ -1,6 +1,8 @@
 package com.hyd.redisfx.controllers.client;
 
+import com.hyd.redisfx.App;
 import com.hyd.redisfx.conn.Connection;
+import com.hyd.redisfx.event.EventType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.Jedis;
@@ -28,6 +30,7 @@ public class JedisManager {
 
     public static void setCurrentDatabase(int currentDatabase) {
         JedisManager.currentDatabase = currentDatabase;
+        App.getEventBus().post(EventType.DatabaseChanged);
     }
 
     public static int getCurrentDatabase() {

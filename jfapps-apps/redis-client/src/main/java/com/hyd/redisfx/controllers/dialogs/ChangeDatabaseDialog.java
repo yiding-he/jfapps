@@ -30,10 +30,7 @@ public class ChangeDatabaseDialog extends FormDialog {
 
     @Override
     protected void okButtonClicked(ActionEvent event) {
-
         JedisManager.setCurrentDatabase(databaseField.getValue());
-        App.getEventBus().post(EventType.DatabaseChanged);
-
         this.close();
     }
 }

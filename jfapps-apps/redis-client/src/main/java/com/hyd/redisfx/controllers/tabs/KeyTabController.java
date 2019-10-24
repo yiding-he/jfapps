@@ -29,8 +29,11 @@ import redis.clients.jedis.ScanResult;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @TabName("Key")
 public class KeyTabController extends AbstractTabController {
@@ -81,10 +84,7 @@ public class KeyTabController extends AbstractTabController {
 
         this.tblKeys.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.C && event.isControlDown()) {  // Ctrl+C
-                KeyItem selectedItem = this.tblKeys.getSelectionModel().getSelectedItem();
-                if (selectedItem != null) {
-                    Fx.copyText(selectedItem.getKey());
-                }
+                mnuCopyKey();
             }
         });
 
@@ -236,18 +236,25 @@ public class KeyTabController extends AbstractTabController {
         listKeys();
     }
 
+    private void forSelectedItems(Consumer<List<KeyItem>> itemsConsumer) {
+        ObservableList<KeyItem> selectedItems = this.tblKeys.getSelectionModel().getSelectedItems();
+        if (!selectedItems.isEmpty()) {
+            itemsConsumer.accept(selectedItems);
+        }
+    }
+
     public void mnuCopyKey() {
-        Optional.ofNullable(tblKeys.getSelectionModel().getSelectedItem())
-            .ifPresent(keyItem -> Fx.copyText(keyItem.getKey()));
+        forSelectedItems(
+            items -> Fx.copyText(
+                items.stream().map(KeyItem::getKey).collect(Collectors.joining("\n"))
+            )
+        );
     }
 
     public void mnuSetExpiry() {
-        Optional.ofNullable(tblKeys.getSelectionModel().getSelectedItem())
-            .ifPresent(keyItem -> {
-                String key = keyItem.getKey();
-                int ttl = JedisManager.usingJedis(jedis -> jedis.ttl(key).intValue());
-                new SetExpiryDialog(keyItem, ttl).show();
-            });
+        forSelectedItems(
+            items -> new SetExpiryDialog(items).show()
+        );
     }
 
     public void cancelSearch() {

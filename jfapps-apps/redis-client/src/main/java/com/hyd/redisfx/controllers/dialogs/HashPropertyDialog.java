@@ -15,7 +15,7 @@ import javafx.event.ActionEvent;
  */
 public class HashPropertyDialog extends FormDialog {
 
-    private final TextFormField keyField;
+    private final TextAreaFormField keyField;
 
     private final TextAreaFormField valueField;
 
@@ -30,7 +30,7 @@ public class HashPropertyDialog extends FormDialog {
         this.setTitle("Hash 属性");
         this.setWidth(400);
 
-        keyField = new TextFormField(I18n.getString("word_key") + ": ", hashItem.getKey());
+        keyField = new TextAreaFormField(I18n.getString("word_key") + ": ", hashItem.getKey(), 5, true);
         valueField = new TextAreaFormField(I18n.getString("word_value") + ": ", hashItem.getValue(), 5, true);
 
         this.addField(keyField);
