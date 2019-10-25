@@ -6,7 +6,7 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane prefHeight="517.0" prefWidth="859.0" xmlns="http://javafx.com/javafx/8.0.171"
+<AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/8.0.171"
   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hyd.jfapps.zkclient.ZookeeperToolController">
   <stylesheets>
     <URL value="@style.css"/>
@@ -38,23 +38,26 @@
       </HBox>
     </top>
     <center>
-      <SplitPane dividerPositions="0.34560906515580736" fx:id="mainPane" disable="true">
+      <SplitPane dividerPositions="0.5" fx:id="mainPane" disable="true">
         <VBox>
-          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 5 5 5"/>
-          <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true">
+          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 10"/>
+          <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent">
             <padding>
-              <Insets topRightBottomLeft="5"/>
+              <Insets topRightBottomLeft="10"/>
             </padding>
-            <FlowPane fx:id="fpChildNodes" hgap="5" vgap="5"/>
+            <FlowPane fx:id="fpChildNodes" hgap="10" vgap="10"/>
           </ScrollPane>
         </VBox>
         <TabPane tabClosingPolicy="UNAVAILABLE">
           <Tab text="Node Data">
             <BorderPane>
+              <padding>
+                <Insets topRightBottomLeft="10"/>
+              </padding>
               <top>
                 <HBox alignment="BASELINE_LEFT" spacing="10.0">
                   <padding>
-                    <Insets topRightBottomLeft="10"/>
+                    <Insets bottom="10"/>
                   </padding>
                   <Button onAction="#saveNodeData" text="保存"/>
                 </HBox>

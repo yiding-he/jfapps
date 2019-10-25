@@ -39,6 +39,7 @@ public class ZkService {
         return children.stream().map(name -> {
             ZkNode zkNode = new ZkNode();
             zkNode.setName(name);
+            zkNode.setFullName(currentPath + "/" + name);
             zkNode.setChildrenCount(zkClient.countChildren(appendCurrentLocation(name)));
             return zkNode;
         }).collect(Collectors.toList());
@@ -78,6 +79,11 @@ public class ZkService {
         this.zkClient.subscribeChildChanges(getCurrentLocationString(), (parentPath, currentChildren) -> {
             Listeners.publish(new ChildrenChangedEvent());
         });
+    }
+
+    public Object getNodeData(String nodeName) {
+        String path = appendCurrentLocation(nodeName);
+        return this.zkClient.readData(path);
     }
 
     private static class MyZkSerializer implements ZkSerializer {

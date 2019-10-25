@@ -7,5 +7,7 @@ public class ZkNode {
 
     private String name;
 
+    private String fullName;
+
     private int childrenCount;
 }

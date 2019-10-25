@@ -73,6 +73,13 @@ public class ZookeeperToolController {
             });
         });
 
+        Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
+            String name = event.getZkNodePane().getZkNode().getName();
+            Object nodeData = service.getNodeData(name);
+            txtNodeData.setText(String.valueOf(nodeData));
+            txtNodeData.setEditable(nodeData instanceof CharSequence);
+        });
+
         Listeners.addListener(ChildrenChangedEvent.class, event -> {
             showNodes();
         });
@@ -131,7 +138,7 @@ public class ZookeeperToolController {
 
             service.connect(
                 comboServerAddr.getValue(),
-                comboConnTimeout.getValue()
+                comboConnTimeout.getValue() * 1000
             );
         }
     }
