@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.lang.String?>
-<BorderPane fx:controller="com.hyd.redisfx.controllers.tabs.KeyTabController" xmlns:fx="javafx">
+<BorderPane fx:controller="com.hyd.redisfx.controllers.tabs.KeyTabController" xmlns:fx="javafx" fx:id="root">
   <center>
     <VBox spacing="5">
 
@@ -25,7 +25,12 @@
             </FXCollections>
           </items>
         </ComboBox>
-        <Button onAction="#listKeys" text="搜索" styleClass="iconButton"/>
+        <Button onAction="#listKeys" fx:id="searchButton" text="搜索" styleClass="iconButton"/>
+      </HBox>
+
+      <HBox alignment="BASELINE_CENTER" fx:id="searchKeyIndicator">
+        <Label text="搜索中..." fx:id="searchKeyIndicatorText"/>
+        <Hyperlink text="取消" onAction="#cancelSearch"/>
       </HBox>
 
       <TableView fx:id="tblKeys" VBox.vgrow="ALWAYS" style="-fx-font-family: monospace">

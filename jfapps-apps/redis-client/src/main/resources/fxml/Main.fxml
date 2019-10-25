@@ -13,7 +13,7 @@
                 <MenuItem text="%mnu_connections_choose" onAction="#openConnectionManager"/>
             </Menu>
             <Menu text="%mnu_databases">
-                <MenuItem text="%mnu_change_database" onAction="#changeDatabaseClicked"/>
+                <Menu text="%mnu_change_database" fx:id="mnuCurrentDatabase"/>
                 <MenuItem text="%mnu_switch_database" onAction="#switchDatabaseClicked" disable="true"/>
                 <SeparatorMenuItem/>
                 <MenuItem text="%mnu_clear_database" onAction="#clearDatabaseClicked" disable="true"/>

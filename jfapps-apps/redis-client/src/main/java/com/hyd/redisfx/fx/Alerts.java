@@ -1,6 +1,6 @@
 package com.hyd.redisfx.fx;
 
-import com.hyd.redisfx.Fx;
+import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.redisfx.i18n.I18n;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -23,7 +23,14 @@ public class Alerts {
     }
 
     public static void error(String titleKey, String messageKey) {
-        Fx.runInFxApplicationThread(() -> createAlert(titleKey, messageKey, ERROR).showAndWait());
+        String title = I18n.getString(titleKey);
+        String message = I18n.getString(messageKey);
+        AlertDialog.error(title, message);
+    }
+
+    public static void error(String titleKey, Exception e) {
+        String title = I18n.getString(titleKey);
+        AlertDialog.error(title, e);
     }
 
     private static Alert createAlert(String titleKey, String messageKey, AlertType alertType) {
