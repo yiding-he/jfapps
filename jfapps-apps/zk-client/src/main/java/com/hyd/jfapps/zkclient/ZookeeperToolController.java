@@ -1,12 +1,14 @@
 package com.hyd.jfapps.zkclient;
 
+import com.hyd.fx.app.AppThread;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.zkclient.config.Config;
 import com.hyd.jfapps.zkclient.config.UserPreferences;
+import com.hyd.jfapps.zkclient.dialog.NewNodeDialog;
 import com.hyd.jfapps.zkclient.event.*;
 import com.hyd.jfapps.zkclient.node.ZkNodePane;
 import com.hyd.jfapps.zkclient.zk.ZkService;
-import java.util.*;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
@@ -14,6 +16,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
+import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
 
 @Getter
 @Setter
@@ -81,7 +90,7 @@ public class ZookeeperToolController {
         });
 
         Listeners.addListener(ChildrenChangedEvent.class, event -> {
-            showNodes();
+            AppThread.runUIThread(this::showNodes);
         });
     }
 
@@ -94,13 +103,27 @@ public class ZookeeperToolController {
         List<String> path = new ArrayList<>();
 
         service.getCurrentLocation().forEach(item -> {
-            fpLocation.getChildren().add(new Label(">"));
-
             path.add(item);
-            Hyperlink link = createLocationLink(item, new ArrayList<>(path));
-
-            fpLocation.getChildren().add(link);
+            fpLocation.getChildren().add(iconLabel(FontAwesomeIcon.PLAY, "8pt", "#AAAAAA"));
+            fpLocation.getChildren().add(createLocationLink(item, new ArrayList<>(path)));
         });
+
+        fpLocation.getChildren().add(iconLabel(FontAwesomeIcon.PLAY, "8pt", "#AAAAAA"));
+        fpLocation.getChildren().add(iconLink(FontAwesomeIcon.PLUS, "#55DD44", this::newNode));
+    }
+
+    private void newNode() {
+        NewNodeDialog newNodeDialog = new NewNodeDialog(ZooKeeperToolApp.getPrimaryStage());
+        newNodeDialog.showAndWait();
+        if (newNodeDialog.isOk()) {
+            String nodeName = newNodeDialog.getNodeName().trim();
+            if (nodeName.isEmpty()) {
+                AlertDialog.error("错误", "名字不能为空");
+                return;
+            }
+
+            service.addNode(nodeName);
+        }
     }
 
     private Hyperlink createLocationLink(String text, List<String> location) {

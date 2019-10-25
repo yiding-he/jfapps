@@ -1,13 +1,17 @@
 package com.hyd.jfapps.zkclient.zk;
 
 import com.hyd.jfapps.zkclient.event.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
+import org.apache.zookeeper.CreateMode;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ZkService {
@@ -84,6 +88,11 @@ public class ZkService {
     public Object getNodeData(String nodeName) {
         String path = appendCurrentLocation(nodeName);
         return this.zkClient.readData(path);
+    }
+
+    public void addNode(String nodeName) {
+        this.zkClient.create(appendCurrentLocation(nodeName), "", CreateMode.PERSISTENT);
+        Listeners.publish(new LocationChangedEvent(currentLocation, currentLocation));
     }
 
     private static class MyZkSerializer implements ZkSerializer {

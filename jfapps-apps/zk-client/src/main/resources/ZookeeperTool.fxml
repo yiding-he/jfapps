@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.net.URL?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import java.lang.*?>
+<?import java.net.URL?>
 <AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/8.0.171"
-  xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hyd.jfapps.zkclient.ZookeeperToolController">
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hyd.jfapps.zkclient.ZookeeperToolController">
   <stylesheets>
     <URL value="@style.css"/>
   </stylesheets>
@@ -40,7 +41,7 @@
     <center>
       <SplitPane dividerPositions="0.5" fx:id="mainPane" disable="true">
         <VBox>
-          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 10"/>
+          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 10;-fx-border-style: solid;-fx-border-color: #CCCCCC;-fx-border-width:0 0 1px 0"/>
           <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent">
             <padding>
               <Insets topRightBottomLeft="10"/>
@@ -59,7 +60,11 @@
                   <padding>
                     <Insets bottom="10"/>
                   </padding>
-                  <Button onAction="#saveNodeData" text="保存"/>
+                  <Button onAction="#saveNodeData" text="保存">
+                    <graphic>
+                      <FontAwesomeIconView glyphName="SAVE" glyphSize="16"/>
+                    </graphic>
+                  </Button>
                 </HBox>
               </top>
               <center>
