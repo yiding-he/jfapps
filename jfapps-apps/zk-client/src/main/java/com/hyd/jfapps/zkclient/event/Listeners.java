@@ -1,13 +1,15 @@
 package com.hyd.jfapps.zkclient.event;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Listeners {
 
-    private static Map<Class, List<Listener>> listeners = new HashMap<>();
+    private static Map<Class, List<Listener>> listeners = new ConcurrentHashMap<>();
 
     @FunctionalInterface
     public interface Listener<T> {
+
         void onEvent(T event) throws Exception;
     }
 
@@ -26,14 +28,18 @@ public class Listeners {
 
     @SuppressWarnings("unchecked")
     public static <T> void publish(Object event) {
-        listeners
-            .getOrDefault(event.getClass(), Collections.emptyList())
-            .forEach(listener -> {
-                try {
-                    listener.onEvent(event);
-                } catch (Exception e) {
-                    throw new EventException(e);
-                }
-            });
+
+        // 复制一份 List 给当前线程使用，以免出现并发异常
+        List<Listener> listenerList = new ArrayList<>(
+            listeners.getOrDefault(event.getClass(), Collections.emptyList())
+        );
+
+        listenerList.forEach(listener -> {
+            try {
+                listener.onEvent(event);
+            } catch (Exception e) {
+                throw new EventException(e);
+            }
+        });
     }
 }

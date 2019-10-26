@@ -1,5 +1,8 @@
 package com.hyd.jfapps.zkclient;
 
+import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
+import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
+
 import com.hyd.fx.app.AppThread;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.zkclient.config.Config;
@@ -9,6 +12,7 @@ import com.hyd.jfapps.zkclient.event.*;
 import com.hyd.jfapps.zkclient.node.ZkNodePane;
 import com.hyd.jfapps.zkclient.zk.ZkService;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import java.util.*;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
@@ -16,13 +20,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
-import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
 
 @Getter
 @Setter
@@ -85,13 +82,29 @@ public class ZookeeperToolController {
         Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
             String name = event.getZkNodePane().getZkNode().getName();
             Object nodeData = service.getNodeData(name);
-            txtNodeData.setText(String.valueOf(nodeData));
-            txtNodeData.setEditable(nodeData instanceof CharSequence);
+            refreshNodeData(nodeData);
+        });
+
+        Listeners.addListener(NodeDataChangedEvent.class, event -> {
+            refreshNodeData(event.getData());
         });
 
         Listeners.addListener(ChildrenChangedEvent.class, event -> {
             AppThread.runUIThread(this::showNodes);
         });
+
+        Listeners.addListener(AddNodeRequest.class, event -> {
+            newNode(event.getParent());
+        });
+
+        Listeners.addListener(DeleteNodeRequest.class, event -> {
+            service.deleteNode(event.getNodePath());
+        });
+    }
+
+    private void refreshNodeData(Object nodeData) {
+        txtNodeData.setText(nodeData == null? null: String.valueOf(nodeData));
+        txtNodeData.setEditable(nodeData == null || nodeData instanceof CharSequence);
     }
 
     private void updateLocation() {
@@ -109,20 +122,28 @@ public class ZookeeperToolController {
         });
 
         fpLocation.getChildren().add(iconLabel(FontAwesomeIcon.PLAY, "8pt", "#AAAAAA"));
-        fpLocation.getChildren().add(iconLink(FontAwesomeIcon.PLUS, "#55DD44", this::newNode));
+        fpLocation.getChildren().add(iconLink(FontAwesomeIcon.PLUS_CIRCLE, "#55DD44", this::newNode));
     }
 
     private void newNode() {
+        newNode(null);
+    }
+
+    private void newNode(String parent) {
         NewNodeDialog newNodeDialog = new NewNodeDialog(ZooKeeperToolApp.getPrimaryStage());
         newNodeDialog.showAndWait();
+
         if (newNodeDialog.isOk()) {
             String nodeName = newNodeDialog.getNodeName().trim();
             if (nodeName.isEmpty()) {
                 AlertDialog.error("错误", "名字不能为空");
                 return;
+            } else if (nodeName.contains("/")) {
+                AlertDialog.error("错误", "名字不能包含 '/'");
+                return;
             }
 
-            service.addNode(nodeName);
+            service.addNode(nodeName, parent, newNodeDialog.isPersistent(), newNodeDialog.isSequential());
         }
     }
 

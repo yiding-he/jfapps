@@ -1,17 +1,17 @@
 package com.hyd.jfapps.zkclient.zk;
 
+import com.hyd.fx.utils.Nullable;
 import com.hyd.jfapps.zkclient.event.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
-
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class ZkService {
@@ -43,7 +43,7 @@ public class ZkService {
         return children.stream().map(name -> {
             ZkNode zkNode = new ZkNode();
             zkNode.setName(name);
-            zkNode.setFullName(currentPath + "/" + name);
+            zkNode.setFullName(StringUtils.removeEnd(currentPath, "/") + "/" + name);
             zkNode.setChildrenCount(zkClient.countChildren(appendCurrentLocation(name)));
             return zkNode;
         }).collect(Collectors.toList());
@@ -78,10 +78,23 @@ public class ZkService {
         Listeners.publish(new LocationChangedEvent(oldLocation, location));
     }
 
+    // 监视当前节点，当节点数据或子节点有变化时刷新界面
     public void watch() {
         this.zkClient.unsubscribeAll();
         this.zkClient.subscribeChildChanges(getCurrentLocationString(), (parentPath, currentChildren) -> {
             Listeners.publish(new ChildrenChangedEvent());
+        });
+
+        this.zkClient.subscribeDataChanges(getCurrentLocationString(), new IZkDataListener() {
+            @Override
+            public void handleDataChange(String dataPath, Object data) throws Exception {
+                Listeners.publish(new NodeDataChangedEvent(data));
+            }
+
+            @Override
+            public void handleDataDeleted(String dataPath) throws Exception {
+                Listeners.publish(new NodeDataChangedEvent(null));
+            }
         });
     }
 
@@ -90,9 +103,17 @@ public class ZkService {
         return this.zkClient.readData(path);
     }
 
-    public void addNode(String nodeName) {
-        this.zkClient.create(appendCurrentLocation(nodeName), "", CreateMode.PERSISTENT);
+    public void addNode(String nodeName, @Nullable String parent, boolean persistent, boolean sequential) {
+        String path = parent == null ? appendCurrentLocation(nodeName) : (parent + "/" + nodeName);
+        CreateMode createMode = persistent ?
+            (sequential ? CreateMode.PERSISTENT_SEQUENTIAL : CreateMode.PERSISTENT) :
+            (sequential ? CreateMode.EPHEMERAL_SEQUENTIAL : CreateMode.EPHEMERAL);
+        this.zkClient.create(path, null, createMode);
         Listeners.publish(new LocationChangedEvent(currentLocation, currentLocation));
+    }
+
+    public void deleteNode(String nodePath) {
+        this.zkClient.deleteRecursive(nodePath);
     }
 
     private static class MyZkSerializer implements ZkSerializer {
