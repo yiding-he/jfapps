@@ -89,7 +89,8 @@
             <manifest>
               <mainClass>com.hyd.redisfx.RedisFxApp</mainClass>
             </manifest>
-          </archive>     <descriptorRefs>
+          </archive>
+          <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
         </configuration>

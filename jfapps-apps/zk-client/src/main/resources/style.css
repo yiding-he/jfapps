@@ -3,7 +3,26 @@
   -fx-spacing: 5;
 }
 
-.form-field>.label {
+.form-field > .label {
   -fx-pref-width: 130;
   -fx-min-width: -1;
+}
+
+.zk-node-selected {
+  -fx-background-color: #B0B0B0;
+}
+
+.zk-node-unselected {
+  -fx-background-color: #ffffff;
+}
+
+.zk-node {
+  -fx-background-radius: 5;
+  -fx-border-style: solid;
+  -fx-border-radius: 5;
+  -fx-border-width: 1;
+  -fx-border-color: #B0B0B0;
+  -fx-padding: 5 10 5 10;
+  -fx-max-width: 250;
+  -fx-min-width: 250;
 }

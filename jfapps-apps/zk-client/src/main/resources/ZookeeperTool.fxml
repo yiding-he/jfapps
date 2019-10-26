@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.Integer?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import java.lang.*?>
 <?import java.net.URL?>
 <?import javafx.collections.FXCollections?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TreeView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<AnchorPane prefHeight="517.0" prefWidth="859.0" xmlns="http://javafx.com/javafx/8.0.171"
-  xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hyd.jfapps.zkclient.ZookeeperToolController">
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hyd.jfapps.zkclient.ZookeeperToolController">
   <stylesheets>
     <URL value="@style.css"/>
   </stylesheets>
@@ -31,9 +20,9 @@
           <Insets bottom="10.0"/>
         </BorderPane.margin>
         <Label text="服务器："/>
-        <TextField HBox.hgrow="ALWAYS" fx:id="zkServersTextField" text="localhost:2181"/>
+        <ComboBox editable="true" fx:id="comboServerAddr"/>
         <Label text="连接超时(秒)"/>
-        <ComboBox fx:id="cmbConnTimeout">
+        <ComboBox fx:id="comboConnTimeout">
           <items>
             <FXCollections fx:factory="observableArrayList">
               <Integer fx:value="10" />
@@ -46,75 +35,95 @@
             <Integer fx:value="60" />
           </value>
         </ComboBox>
-        <Button fx:id="connectButton" onAction="#connectButtonClicked" text="连接服务器" prefWidth="100"/>
+        <Button fx:id="btnConnect" onAction="#btnConnectClicked" text="连接服务器" prefWidth="100"/>
       </HBox>
     </top>
     <center>
-      <SplitPane dividerPositions="0.34560906515580736" fx:id="mainPane" disable="true">
-        <TreeView fx:id="nodeTreeView"/>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
+      <SplitPane dividerPositions="0.5" fx:id="mainPane" disable="true">
+        <VBox>
+          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 10;-fx-border-style: solid;-fx-border-color: #CCCCCC;-fx-border-width:0 0 1px 0"/>
+          <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent">
+            <padding>
+              <Insets topRightBottomLeft="10"/>
+            </padding>
+            <FlowPane fx:id="fpChildNodes" hgap="10" vgap="10"/>
+          </ScrollPane>
+        </VBox>
+        <TabPane tabClosingPolicy="UNAVAILABLE" fx:id="nodeDataPane">
           <Tab text="Node Data">
             <BorderPane>
+              <padding>
+                <Insets topRightBottomLeft="10"/>
+              </padding>
               <top>
                 <HBox alignment="BASELINE_LEFT" spacing="10.0">
                   <padding>
-                    <Insets topRightBottomLeft="10"/>
+                    <Insets bottom="10"/>
                   </padding>
-                  <Button onAction="#nodeDataSaveOnAction" text="保存"/>
+                  <Button onAction="#saveNodeData" text="保存">
+                    <graphic>
+                      <FontAwesomeIconView glyphName="SAVE" glyphSize="16"/>
+                    </graphic>
+                  </Button>
+                  <Button onAction="#deleteNodeData" text="删除数据">
+                    <graphic>
+                      <FontAwesomeIconView glyphName="TRASH" glyphSize="16"/>
+                    </graphic>
+                  </Button>
                 </HBox>
               </top>
               <center>
-                <TextArea fx:id="nodeDataValueTextArea" wrapText="true" style="-fx-font-family: DialogInput"/>
+                <TextArea fx:id="txtNodeData" wrapText="true" style="-fx-font-family: DialogInput"/>
               </center>
             </BorderPane>
           </Tab>
           <Tab text="Node Metadata">
             <ScrollPane fitToWidth="true" fitToHeight="true">
-              <VBox spacing="10" styleClass="rows">
+              <VBox spacing="10">
                 <padding><Insets topRightBottomLeft="15"/></padding>
                 <HBox styleClass="form-field">
-                  <Label text="ACL Version"/>
-                  <TextField fx:id="A_VERSIONTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="ACL 版本"/>
+                  <TextField fx:id="txtAclVersion" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Creation Time"/>
-                  <TextField fx:id="C_TIMETextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="创建时间"/>
+                  <TextField fx:id="txtCreateTime" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Children Version"/>
-                  <TextField fx:id="C_VERSIONTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="子节点版本"/>
+                  <TextField fx:id="txtChildrenVersion" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="Creation ID"/>
                   <TextField fx:id="CZXIDTextField" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Data Length"/>
-                  <TextField fx:id="DATA_LENGTHTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="数据长度"/>
+                  <TextField fx:id="txtDataLength" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="Ephemeral Owner"/>
-                  <TextField fx:id="EPHEMERAL_OWNERTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtEphemeralOwner" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Last Modified Time"/>
-                  <TextField fx:id="M_TIMETextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="上次修改时间"/>
+                  <TextField fx:id="txtLastModified" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Modified ID"/>
-                  <TextField fx:id="MZXIDTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="修改者 ID"/>
+                  <TextField fx:id="txtModifiedId" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Number of Children"/>
-                  <TextField fx:id="NUM_CHILDRENTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="子节点数量"/>
+                  <TextField fx:id="txtNumberOfChildren" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Node ID"/>
-                  <TextField fx:id="PZXIDTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="节点 ID"/>
+                  <TextField fx:id="txtNodeId" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
-                  <Label text="Data Version"/>
-                  <TextField fx:id="VERSIONTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <Label text="数据版本"/>
+                  <TextField fx:id="txtDataVersion" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
               </VBox>
             </ScrollPane>
@@ -126,15 +135,15 @@
               </padding>
               <HBox styleClass="form-field">
                 <Label text="Scheme:"/>
-                <TextField fx:id="aclSchemeTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtAclScheme" editable="false" HBox.hgrow="ALWAYS"/>
               </HBox>
               <HBox styleClass="form-field">
                 <Label text="Id:"/>
-                <TextField fx:id="aclIdTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtAclId" editable="false" HBox.hgrow="ALWAYS"/>
               </HBox>
               <HBox styleClass="form-field">
                 <Label text="Permissions:"/>
-                <TextField fx:id="aclPermissionsTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtAclPermissions" editable="false" HBox.hgrow="ALWAYS"/>
               </HBox>
             </VBox>
           </Tab>

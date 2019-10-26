@@ -1,0 +1,109 @@
+package com.hyd.jfapps.zkclient.node;
+
+import static com.hyd.fx.builders.MenuBuilder.contextMenu;
+import static com.hyd.fx.builders.MenuBuilder.menuItem;
+import static de.jensd.fx.glyphs.GlyphsDude.createIconLabel;
+
+import com.hyd.fx.dialog.AlertDialog;
+import com.hyd.jfapps.zkclient.FxUtil;
+import com.hyd.jfapps.zkclient.event.*;
+import com.hyd.jfapps.zkclient.zk.ZkNode;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import java.util.List;
+import javafx.scene.control.*;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+
+public class ZkNodePane extends HBox {
+
+    private static ContextMenu contextMenu;
+
+    static {
+        Listeners.addListener(LocationChangedEvent.class, event -> closeContextMenu());
+    }
+
+    private List<String> path;
+
+    private ZkNode zkNode;
+
+    public ZkNodePane(List<String> path, ZkNode zkNode) {
+        this.setSpacing(5);
+        this.path = path;
+        this.zkNode = zkNode;
+
+        Label label = new Label(zkNode.getName());
+        label.setWrapText(true);
+        label.setFont(Font.font("DialogInput"));
+
+        Label iconLabel;
+        if (zkNode.getChildrenCount() == 0) {
+            iconLabel = createIconLabel(FontAwesomeIcon.TAG, null, "10pt", null, ContentDisplay.CENTER);
+        } else {
+            iconLabel = createIconLabel(FontAwesomeIcon.FOLDER_OPEN_ALT, null, "10pt", null, ContentDisplay.CENTER);
+        }
+
+        this.getChildren().addAll(iconLabel, label);
+        this.getStyleClass().addAll("zk-node", "zk-node-unselected");
+        this.setOnContextMenuRequested(this::showContextMenu);
+    }
+
+    public ZkNode getZkNode() {
+        return zkNode;
+    }
+
+    private void showContextMenu(ContextMenuEvent event) {
+        // 关闭当前正在打开的右键菜单
+        closeContextMenu();
+
+        // 在新的位置重新打开右键菜单
+        contextMenu = createContextMenu();
+        contextMenu.show(this, event.getScreenX(), event.getScreenY());
+    }
+
+    private static void closeContextMenu() {
+        if (contextMenu != null && contextMenu.isShowing()) {
+            contextMenu.hide();
+            contextMenu = null;
+        }
+    }
+
+    private ContextMenu createContextMenu() {
+        if (this.zkNode.getChildrenCount() == 0) {
+            return createNodeContextMenu();
+        } else {
+            return createFolderContextMenu();
+        }
+    }
+
+    private ContextMenu createNodeContextMenu() {
+        return contextMenu(
+            menuItem("复制名称", FxUtil.icon(FontAwesomeIcon.COPY, "#3399CC"), () -> {
+            }),
+            menuItem("删除节点", FxUtil.icon(FontAwesomeIcon.TRASH, "#CC9933"), this::deleteNode),
+            menuItem("添加子节点", FxUtil.icon(FontAwesomeIcon.PLUS_CIRCLE, "#33CC99"), this::addNewNode)
+        );
+    }
+
+    private ContextMenu createFolderContextMenu() {
+        return contextMenu(
+            menuItem("复制名称", FxUtil.icon(FontAwesomeIcon.COPY, "#3399CC"), () -> {
+            }),
+            menuItem("删除节点及所有子节点", FxUtil.icon(FontAwesomeIcon.TRASH, "#CC9933"), this::deleteNode)
+        );
+    }
+
+    private void addNewNode() {
+        Listeners.publish(new AddNodeRequest(this.zkNode.getFullName()));
+    }
+
+    private void deleteNode() {
+        String message = this.zkNode.getChildrenCount() == 0 ?
+            ("确定要删除节点“" + this.zkNode.getName() + "”吗？") :
+            ("确定要删除节点“" + this.zkNode.getName() + "”及所有子节点吗？");
+
+        if (AlertDialog.confirmYesNo("删除节点", message)) {
+            Listeners.publish(new DeleteNodeRequest(this.zkNode.getFullName()));
+        }
+    }
+}
