@@ -7,5 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class NodeDataChangedEvent {
 
+    private String fullPath;
+
     private Object data;
 }

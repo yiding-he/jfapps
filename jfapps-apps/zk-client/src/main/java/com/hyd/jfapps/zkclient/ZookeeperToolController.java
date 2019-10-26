@@ -42,7 +42,11 @@ public class ZookeeperToolController {
 
     public FlowPane fpChildNodes;
 
+    public TabPane nodeDataPane;
+
     private ZkService service = new ZkService();
+
+    private ZkNodePane currentSelectedNode;
 
     public void initialize() {
         comboServerAddr.getItems().addAll(UserPreferences.get(Config.ServerAddresses));
@@ -64,7 +68,11 @@ public class ZookeeperToolController {
             log.info("location -> {}", service.getCurrentLocation());
             service.watch();
             updateLocation();
-            showNodes();
+            refreshNodes();
+        });
+
+        Listeners.addListener(ZkNodeUnselectedEvent.class, event -> {
+            nodeDataPane.setDisable(true);
         });
 
         Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
@@ -80,9 +88,16 @@ public class ZookeeperToolController {
         });
 
         Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
-            String name = event.getZkNodePane().getZkNode().getName();
+            currentSelectedNode = event.getZkNodePane();
+            nodeDataPane.setDisable(false);
+
+            String name = currentSelectedNode.getZkNode().getName();
             Object nodeData = service.getNodeData(name);
             refreshNodeData(nodeData);
+        });
+
+        Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
+            service.watchNode(event.getZkNodePane().getZkNode().getFullName());
         });
 
         Listeners.addListener(NodeDataChangedEvent.class, event -> {
@@ -90,7 +105,7 @@ public class ZookeeperToolController {
         });
 
         Listeners.addListener(ChildrenChangedEvent.class, event -> {
-            AppThread.runUIThread(this::showNodes);
+            AppThread.runUIThread(this::refreshNodes);
         });
 
         Listeners.addListener(AddNodeRequest.class, event -> {
@@ -103,8 +118,11 @@ public class ZookeeperToolController {
     }
 
     private void refreshNodeData(Object nodeData) {
-        txtNodeData.setText(nodeData == null? null: String.valueOf(nodeData));
-        txtNodeData.setEditable(nodeData == null || nodeData instanceof CharSequence);
+        AppThread.runUIThread(() -> {
+            txtNodeData.setText(nodeData == null ? null : String.valueOf(nodeData));
+            txtNodeData.setPromptText(nodeData == null ? "(无数据)" : "");
+            txtNodeData.setEditable(nodeData == null || nodeData instanceof CharSequence);
+        });
     }
 
     private void updateLocation() {
@@ -153,7 +171,7 @@ public class ZookeeperToolController {
         return link;
     }
 
-    private void showNodes() {
+    private void refreshNodes() {
         fpChildNodes.getChildren().clear();
 
         service.listChildren().forEach(item -> {
@@ -167,6 +185,8 @@ public class ZookeeperToolController {
             });
             fpChildNodes.getChildren().add(zkNodePane);
         });
+
+        Listeners.publish(new ZkNodeUnselectedEvent());
     }
 
     public void btnConnectClicked() {
@@ -188,5 +208,21 @@ public class ZookeeperToolController {
     }
 
     public void saveNodeData() {
+        if (currentSelectedNode != null) {
+            String fullName = currentSelectedNode.getZkNode().getFullName();
+            this.service.saveData(fullName, txtNodeData.getText());
+        }
+    }
+
+    public void deleteNodeData() {
+        if (currentSelectedNode == null) {
+            return;
+        }
+
+        String currentNodeName = this.service.getCurrentNodeName();
+        if (AlertDialog.confirmYesNo("删除节点数据", "确认要删除节点“" + currentNodeName + "”的数据吗？")) {
+            String fullName = currentSelectedNode.getZkNode().getFullName();
+            this.service.deleteNodeData(fullName);
+        }
     }
 }

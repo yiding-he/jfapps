@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import java.lang.*?>
+<?import java.net.URL?>
 <?import javafx.collections.FXCollections?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.lang.*?>
-<?import java.net.URL?>
 <AnchorPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/8.0.171"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.hyd.jfapps.zkclient.ZookeeperToolController">
   <stylesheets>
@@ -49,7 +49,7 @@
             <FlowPane fx:id="fpChildNodes" hgap="10" vgap="10"/>
           </ScrollPane>
         </VBox>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
+        <TabPane tabClosingPolicy="UNAVAILABLE" fx:id="nodeDataPane">
           <Tab text="Node Data">
             <BorderPane>
               <padding>
@@ -63,6 +63,11 @@
                   <Button onAction="#saveNodeData" text="保存">
                     <graphic>
                       <FontAwesomeIconView glyphName="SAVE" glyphSize="16"/>
+                    </graphic>
+                  </Button>
+                  <Button onAction="#deleteNodeData" text="删除数据">
+                    <graphic>
+                      <FontAwesomeIconView glyphName="TRASH" glyphSize="16"/>
                     </graphic>
                   </Button>
                 </HBox>
