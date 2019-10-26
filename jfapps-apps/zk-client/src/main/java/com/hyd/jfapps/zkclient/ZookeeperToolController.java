@@ -3,6 +3,7 @@ package com.hyd.jfapps.zkclient;
 import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
 import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
 
+import com.hyd.fx.NodeUtils;
 import com.hyd.fx.app.AppThread;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.zkclient.config.Config;
@@ -13,6 +14,7 @@ import com.hyd.jfapps.zkclient.node.ZkNodePane;
 import com.hyd.jfapps.zkclient.zk.ZkService;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import java.util.*;
+import java.util.function.Consumer;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
@@ -44,12 +46,25 @@ public class ZookeeperToolController {
 
     public TabPane nodeDataPane;
 
+    public TextField txtSearch;
+
+    public ScrollPane spNodesPane;
+
     private ZkService service = new ZkService();
 
     private ZkNodePane currentSelectedNode;
 
     public void initialize() {
         comboServerAddr.getItems().addAll(UserPreferences.get(Config.ServerAddresses));
+
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
+            forEachNodePane(nodeDataPane -> {
+                boolean match = nodeDataPane
+                    .getZkNode().getName().toLowerCase()
+                    .contains(txtSearch.getText().trim().toLowerCase());
+                nodeDataPane.setVisible(match);
+            });
+        });
 
         Listeners.addListener(ZkConnectedEvent.class, event -> {
             lblStatus.setText("服务器已连接。");
@@ -76,13 +91,11 @@ public class ZookeeperToolController {
         });
 
         Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
-            fpChildNodes.getChildren().forEach(node -> {
-                if (node instanceof ZkNodePane) {
-                    if (node == event.getZkNodePane()) {
-                        FxUtil.switchClass(node, "zk-node-unselected", "zk-node-selected");
-                    } else {
-                        FxUtil.switchClass(node, "zk-node-selected", "zk-node-unselected");
-                    }
+            forEachNodePane(node -> {
+                if (node == event.getZkNodePane()) {
+                    FxUtil.switchClass(node, "zk-node-unselected", "zk-node-selected");
+                } else {
+                    FxUtil.switchClass(node, "zk-node-selected", "zk-node-unselected");
                 }
             });
         });
@@ -114,6 +127,14 @@ public class ZookeeperToolController {
 
         Listeners.addListener(DeleteNodeRequest.class, event -> {
             service.deleteNode(event.getNodePath());
+        });
+    }
+
+    private void forEachNodePane(Consumer<ZkNodePane> consumer) {
+        fpChildNodes.getChildren().forEach(node -> {
+            if (node instanceof ZkNodePane) {
+                consumer.accept((ZkNodePane) node);
+            }
         });
     }
 
@@ -173,6 +194,7 @@ public class ZookeeperToolController {
 
     private void refreshNodes() {
         fpChildNodes.getChildren().clear();
+        txtSearch.setText(null);
 
         service.listChildren().forEach(item -> {
             ZkNodePane zkNodePane = new ZkNodePane(service.getCurrentLocation(), item);
@@ -183,6 +205,7 @@ public class ZookeeperToolController {
                     service.goInto(item.getName());
                 }
             });
+            NodeUtils.setManaged(zkNodePane);
             fpChildNodes.getChildren().add(zkNodePane);
         });
 

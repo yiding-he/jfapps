@@ -2,10 +2,11 @@ package com.hyd.jfapps.zkclient.node;
 
 import static com.hyd.fx.builders.MenuBuilder.contextMenu;
 import static com.hyd.fx.builders.MenuBuilder.menuItem;
+import static com.hyd.jfapps.zkclient.FxUtil.icon;
 import static de.jensd.fx.glyphs.GlyphsDude.createIconLabel;
 
 import com.hyd.fx.dialog.AlertDialog;
-import com.hyd.jfapps.zkclient.FxUtil;
+import com.hyd.fx.system.ClipboardHelper;
 import com.hyd.jfapps.zkclient.event.*;
 import com.hyd.jfapps.zkclient.zk.ZkNode;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -35,6 +36,8 @@ public class ZkNodePane extends HBox {
         Label label = new Label(zkNode.getName());
         label.setWrapText(true);
         label.setFont(Font.font("DialogInput"));
+        label.setMaxWidth(250);
+        label.setMinWidth(250);
 
         Label iconLabel;
         if (zkNode.getChildrenCount() == 0) {
@@ -78,18 +81,27 @@ public class ZkNodePane extends HBox {
 
     private ContextMenu createNodeContextMenu() {
         return contextMenu(
-            menuItem("复制名称", FxUtil.icon(FontAwesomeIcon.COPY, "#3399CC"), () -> {
-            }),
-            menuItem("删除节点", FxUtil.icon(FontAwesomeIcon.TRASH, "#CC9933"), this::deleteNode),
-            menuItem("添加子节点", FxUtil.icon(FontAwesomeIcon.PLUS_CIRCLE, "#33CC99"), this::addNewNode)
+            menuItem("复制名称", icon(FontAwesomeIcon.COPY, "#3399CC"), this::copyName),
+            menuItem("复制完整路径", icon(FontAwesomeIcon.COPY, "#3399CC"), this::copyFullName),
+            menuItem("删除节点", icon(FontAwesomeIcon.TRASH, "#CC9933"), this::deleteNode),
+            menuItem("添加子节点", icon(FontAwesomeIcon.PLUS_CIRCLE, "#33CC99"), this::addNewNode)
         );
+    }
+
+    private void copyName() {
+        ClipboardHelper.putString(this.zkNode.getName());
+    }
+
+    private void copyFullName() {
+        ClipboardHelper.putString(this.zkNode.getFullName());
     }
 
     private ContextMenu createFolderContextMenu() {
         return contextMenu(
-            menuItem("复制名称", FxUtil.icon(FontAwesomeIcon.COPY, "#3399CC"), () -> {
-            }),
-            menuItem("删除节点及所有子节点", FxUtil.icon(FontAwesomeIcon.TRASH, "#CC9933"), this::deleteNode)
+            menuItem("复制名称", icon(FontAwesomeIcon.COPY, "#3399CC"), this::copyName),
+            menuItem("复制完整路径", icon(FontAwesomeIcon.COPY, "#3399CC"), this::copyFullName),
+            menuItem("删除节点及所有子节点", icon(FontAwesomeIcon.TRASH, "#CC9933"), this::deleteNode),
+            menuItem("添加子节点", icon(FontAwesomeIcon.PLUS_CIRCLE, "#33CC99"), this::addNewNode)
         );
     }
 

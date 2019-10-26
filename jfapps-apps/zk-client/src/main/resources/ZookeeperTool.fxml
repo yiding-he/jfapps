@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import de.jensd.fx.glyphs.fontawesome.*?>
 <?import java.lang.*?>
 <?import java.net.URL?>
 <?import javafx.collections.FXCollections?>
@@ -41,13 +41,14 @@
     <center>
       <SplitPane dividerPositions="0.5" fx:id="mainPane" disable="true">
         <VBox>
-          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 10;-fx-border-style: solid;-fx-border-color: #CCCCCC;-fx-border-width:0 0 1px 0"/>
-          <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent">
-            <padding>
-              <Insets topRightBottomLeft="10"/>
-            </padding>
+          <FlowPane fx:id="fpLocation" style="-fx-padding: 5 10;"/>
+          <ScrollPane fx:id="spNodesPane" VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-padding:10;-fx-background-color: transparent;-fx-border-style: solid;-fx-border-color: #CCCCCC;-fx-border-width:1px 0 1px 0">
             <FlowPane fx:id="fpChildNodes" hgap="10" vgap="10"/>
           </ScrollPane>
+          <HBox alignment="BASELINE_LEFT" style="-fx-padding: 5 10" spacing="10">
+            <FontAwesomeIconView glyphName="SEARCH" glyphSize="16"/>
+            <TextField prefWidth="300" fx:id="txtSearch"/>
+          </HBox>
         </VBox>
         <TabPane tabClosingPolicy="UNAVAILABLE" fx:id="nodeDataPane">
           <Tab text="Node Data">
@@ -77,6 +78,7 @@
               </center>
             </BorderPane>
           </Tab>
+<!--
           <Tab text="Node Metadata">
             <ScrollPane fitToWidth="true" fitToHeight="true">
               <VBox spacing="10">
@@ -147,6 +149,7 @@
               </HBox>
             </VBox>
           </Tab>
+-->
         </TabPane>
       </SplitPane>
     </center>
