@@ -14,6 +14,8 @@ import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Stat;
 
 @Slf4j
 public class ZkService {
@@ -91,6 +93,12 @@ public class ZkService {
     public Object getNodeData(String nodeName) {
         String path = appendCurrentLocation(nodeName);
         return this.zkClient.readData(path);
+    }
+
+    public Stat getNodeMetadata(String nodeName) {
+        String path = appendCurrentLocation(nodeName);
+        Entry<List<ACL>, Stat> aclEntry = this.zkClient.getAcl(path);
+        return aclEntry.getValue();
     }
 
     public void addNode(String nodeName, @Nullable String parent, boolean persistent, boolean sequential) {

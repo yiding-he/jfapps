@@ -1,10 +1,10 @@
 package com.hyd.jfapps.zkclient;
 
+import static com.hyd.fx.app.AppThread.runUIThread;
 import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
 import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
 
 import com.hyd.fx.NodeUtils;
-import com.hyd.fx.app.AppThread;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.zkclient.config.Config;
 import com.hyd.jfapps.zkclient.config.UserPreferences;
@@ -13,6 +13,7 @@ import com.hyd.jfapps.zkclient.event.*;
 import com.hyd.jfapps.zkclient.node.ZkNodePane;
 import com.hyd.jfapps.zkclient.zk.ZkService;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
 import javafx.scene.control.*;
@@ -22,11 +23,24 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zookeeper.data.Stat;
 
 @Getter
 @Setter
 @Slf4j
 public class ZookeeperToolController {
+
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT = ThreadLocal.withInitial(
+        () -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+    );
+
+    private static String format(Date date) {
+        return DATE_FORMAT.get().format(date);
+    }
+
+    private static String format(long timestamp) {
+        return DATE_FORMAT.get().format(new Date(timestamp));
+    }
 
     public ComboBox<String> comboServerAddr;
 
@@ -49,6 +63,26 @@ public class ZookeeperToolController {
     public TextField txtSearch;
 
     public ScrollPane spNodesPane;
+
+    public TextField txtAversion;
+
+    public TextField txtCtime;
+
+    public TextField txtCversion;
+
+    public TextField txtCzxid;
+
+    public TextField txtDataLength;
+
+    public TextField txtEphemeralOwner;
+
+    public TextField txtMtime;
+
+    public TextField txtMzxid;
+
+    public TextField txtNumChildren;
+
+    public TextField txtVersion;
 
     private ZkService service = new ZkService();
 
@@ -105,8 +139,8 @@ public class ZookeeperToolController {
             nodeDataPane.setDisable(false);
 
             String name = currentSelectedNode.getZkNode().getName();
-            Object nodeData = service.getNodeData(name);
-            refreshNodeData(nodeData);
+            refreshNodeData(service.getNodeData(name));
+            refreshNodeMata(service.getNodeMetadata(name));
         });
 
         Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
@@ -118,7 +152,7 @@ public class ZookeeperToolController {
         });
 
         Listeners.addListener(ChildrenChangedEvent.class, event -> {
-            AppThread.runUIThread(this::refreshNodes);
+            runUIThread(this::refreshNodes);
         });
 
         Listeners.addListener(AddNodeRequest.class, event -> {
@@ -139,10 +173,25 @@ public class ZookeeperToolController {
     }
 
     private void refreshNodeData(Object nodeData) {
-        AppThread.runUIThread(() -> {
+        runUIThread(() -> {
             txtNodeData.setText(nodeData == null ? null : String.valueOf(nodeData));
             txtNodeData.setPromptText(nodeData == null ? "(无数据)" : "");
             txtNodeData.setEditable(nodeData == null || nodeData instanceof CharSequence);
+        });
+    }
+
+    private void refreshNodeMata(Stat nodeMetadata) {
+        runUIThread(() -> {
+            txtAversion.setText(String.valueOf(nodeMetadata.getVersion()));
+            txtCtime.setText(format(nodeMetadata.getCtime()));
+            txtCversion.setText(String.valueOf(nodeMetadata.getCversion()));
+            txtCzxid.setText(String.valueOf(nodeMetadata.getCzxid()));
+            txtDataLength.setText(String.valueOf(nodeMetadata.getDataLength()));
+            txtEphemeralOwner.setText(String.valueOf(nodeMetadata.getEphemeralOwner()));
+            txtMtime.setText(format(nodeMetadata.getMtime()));
+            txtMzxid.setText(String.valueOf(nodeMetadata.getMzxid()));
+            txtNumChildren.setText(String.valueOf(nodeMetadata.getNumChildren()));
+            txtVersion.setText(String.valueOf(nodeMetadata.getVersion()));
         });
     }
 

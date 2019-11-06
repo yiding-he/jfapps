@@ -78,26 +78,25 @@
               </center>
             </BorderPane>
           </Tab>
-<!--
           <Tab text="Node Metadata">
             <ScrollPane fitToWidth="true" fitToHeight="true">
               <VBox spacing="10">
                 <padding><Insets topRightBottomLeft="15"/></padding>
                 <HBox styleClass="form-field">
                   <Label text="ACL 版本"/>
-                  <TextField fx:id="txtAclVersion" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtAversion" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="创建时间"/>
-                  <TextField fx:id="txtCreateTime" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtCtime" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="子节点版本"/>
-                  <TextField fx:id="txtChildrenVersion" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtCversion" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="Creation ID"/>
-                  <TextField fx:id="CZXIDTextField" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtCzxid" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="数据长度"/>
@@ -109,23 +108,19 @@
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="上次修改时间"/>
-                  <TextField fx:id="txtLastModified" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtMtime" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="修改者 ID"/>
-                  <TextField fx:id="txtModifiedId" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtMzxid" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="子节点数量"/>
-                  <TextField fx:id="txtNumberOfChildren" editable="false" HBox.hgrow="ALWAYS"/>
-                </HBox>
-                <HBox styleClass="form-field">
-                  <Label text="节点 ID"/>
-                  <TextField fx:id="txtNodeId" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtNumChildren" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
                 <HBox styleClass="form-field">
                   <Label text="数据版本"/>
-                  <TextField fx:id="txtDataVersion" editable="false" HBox.hgrow="ALWAYS"/>
+                  <TextField fx:id="txtVersion" editable="false" HBox.hgrow="ALWAYS"/>
                 </HBox>
               </VBox>
             </ScrollPane>
@@ -149,7 +144,6 @@
               </HBox>
             </VBox>
           </Tab>
--->
         </TabPane>
       </SplitPane>
     </center>
