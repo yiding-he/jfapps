@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 
 public class NewNodeDialog extends FormDialog {
 
-    private final TextFormField nodeName = new TextFormField("节点名称", "");
+    private final TextAreaFormField nodeName = new TextAreaFormField("节点名称", "", 5, true);
 
     private final CheckBoxFormField persistent = new CheckBoxFormField("持久节点");
 
