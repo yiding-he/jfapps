@@ -8,13 +8,6 @@
   <artifactId>jfapps-redis-client</artifactId>
   <version>0.1-SNAPSHOT</version>
 
-  <repositories>
-    <repository>
-      <id>yiding-he-github</id>
-      <url>https://raw.githubusercontent.com/yiding-he/mvn-repo/master</url>
-    </repository>
-  </repositories>
-
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
