@@ -18,15 +18,12 @@ import javafx.scene.layout.BorderPane;
 )
 public class RedisFxApp extends JfappsApp {
 
-    private MainController mainController;
-
     public static void main(String[] args) {
         JfappsAppLauncher.launchApp(RedisFxApp.class);
     }
 
     public RedisFxApp() {
         setOnCloseRequest(JedisManager::shutdown);
-        setOnShown(() -> this.mainController.onShown());
     }
 
     @Override
@@ -35,7 +32,7 @@ public class RedisFxApp extends JfappsApp {
         FXMLLoader fxmlLoader = Fx.getFxmlLoader("/fxml/Main.fxml");
         BorderPane mainPane = fxmlLoader.load();
 
-        mainController = fxmlLoader.getController();
+        MainController mainController = fxmlLoader.getController();
         mainController.setPrimaryStage(appContext.getPrimaryStage());
 
         return mainPane;

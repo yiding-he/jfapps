@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.lang.String?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
 <BorderPane fx:controller="com.hyd.redisfx.controllers.tabs.KeyTabController" xmlns:fx="javafx" fx:id="root">
   <center>
     <VBox spacing="5">
@@ -25,7 +26,11 @@
             </FXCollections>
           </items>
         </ComboBox>
-        <Button onAction="#listKeys" fx:id="searchButton" text="搜索" styleClass="iconButton"/>
+        <Button onAction="#listKeys" fx:id="searchButton" styleClass="iconButton">
+          <graphic>
+            <FontAwesomeIconView glyphName="SEARCH" glyphSize="14"/>
+          </graphic>
+        </Button>
       </HBox>
 
       <HBox alignment="BASELINE_CENTER" fx:id="searchKeyIndicator">
@@ -43,16 +48,25 @@
         <contextMenu>
           <ContextMenu fx:id="mnuConfigValues">
             <items>
-              <MenuItem text="%hash_op_copy_key" onAction="#mnuCopyKey" accelerator="Shortcut+C"/>
-              <MenuItem text="%key_set_expiry" onAction="#mnuSetExpiry"/>
+              <MenuItem text="%hash_op_copy_key" onAction="#mnuCopyKey" accelerator="Shortcut+C">
+                <graphic>
+                  <FontAwesomeIconView glyphName="COPY" glyphSize="16"/>
+                </graphic>
+              </MenuItem>
+              <MenuItem text="%key_set_expiry" onAction="#mnuSetExpiry">
+                <graphic>
+                  <FontAwesomeIconView glyphName="CALENDAR_TIMES_ALT" glyphSize="16"/>
+                </graphic>
+              </MenuItem>
+              <MenuItem text="%op_delete" onAction="#deleteKeys" accelerator="Delete">
+                <graphic>
+                  <FontAwesomeIconView glyphName="TRASH_ALT" glyphSize="16"/>
+                </graphic>
+              </MenuItem>
             </items>
           </ContextMenu>
         </contextMenu>
       </TableView>
-
-      <HBox spacing="5">
-        <Button text="%op_delete" onAction="#deleteKeys"/>
-      </HBox>
     </VBox>
   </center>
 </BorderPane>

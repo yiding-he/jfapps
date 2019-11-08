@@ -64,7 +64,7 @@ public class MainController {
     }
 
     public void onShown() {
-        openConnectionManager(null);
+
     }
 
     public Stage getPrimaryStage() {

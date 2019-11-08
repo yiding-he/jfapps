@@ -4,6 +4,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import de.jensd.fx.glyphs.weathericons.WeatherIconView?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.172-ea"
             fx:controller="com.hyd.redisfx.controllers.conn.ConnectionManagerController">
 
@@ -22,11 +24,23 @@
           </ListView>
           <HBox alignment="BASELINE_LEFT" spacing="10">
             <Button fx:id="btnCreate" minWidth="-Infinity"
-                    onAction="#createClicked" text="%op_create"/>
+                    onAction="#createClicked" text="%op_create">
+              <graphic>
+                <FontAwesomeIconView glyphName="PLUS_CIRCLE" glyphSize="16"/>
+              </graphic>
+            </Button>
             <Button fx:id="btnCopy" disable="true"
-                    minWidth="-Infinity" onAction="#copyClicked" text="%op_copy"/>
+                    minWidth="-Infinity" onAction="#copyClicked" text="%op_copy">
+              <graphic>
+                <FontAwesomeIconView glyphName="COPY" glyphSize="16"/>
+              </graphic>
+            </Button>
             <Button fx:id="btnDelete" disable="true"
-                    minWidth="-Infinity" onAction="#deleteClicked" text="%op_delete"/>
+                    minWidth="-Infinity" onAction="#deleteClicked" text="%op_delete">
+              <graphic>
+                <FontAwesomeIconView glyphName="TRASH_ALT" glyphSize="16"/>
+              </graphic>
+            </Button>
           </HBox>
         </VBox>
         <VBox spacing="10" HBox.hgrow="ALWAYS">
@@ -51,8 +65,16 @@
             <IntegerSpinner fx:id="spnProxyPort" prefWidth="80"/>
           </HBox>
           <HBox alignment="BASELINE_LEFT" spacing="10">
-            <Button fx:id="btnTest" disable="true" onAction="#testClicked" text="%op_test"/>
-            <Button fx:id="btnSave" disable="true" onAction="#saveClicked" text="%op_save"/>
+            <Button fx:id="btnTest" disable="true" onAction="#testClicked" text="%op_test">
+              <graphic>
+                <FontAwesomeIconView glyphName="EYE" glyphSize="16"/>
+              </graphic>
+            </Button>
+            <Button fx:id="btnSave" disable="true" onAction="#saveClicked" text="%op_save">
+              <graphic>
+                <FontAwesomeIconView glyphName="SAVE" glyphSize="16"/>
+              </graphic>
+            </Button>
           </HBox>
         </VBox>
       </HBox>
@@ -66,8 +88,16 @@
           <Insets bottom="10" left="10" right="10" top="5"/>
         </padding>
 
-        <Button fx:id="btnOpen" disable="true" onAction="#openConnectionClicked" text="%op_open_conn"/>
-        <Button onAction="#closeClicked" text="%op_close"/>
+        <Button fx:id="btnOpen" disable="true" onAction="#openConnectionClicked" text="%op_open_conn">
+          <graphic>
+            <FontAwesomeIconView glyphName="DATABASE" glyphSize="16"/>
+          </graphic>
+        </Button>
+        <Button onAction="#closeClicked" text="%op_close">
+          <graphic>
+            <FontAwesomeIconView glyphName="MINUS_CIRCLE" glyphSize="16"/>
+          </graphic>
+        </Button>
       </HBox>
     </VBox>
   </bottom>

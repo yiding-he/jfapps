@@ -85,6 +85,8 @@ public class KeyTabController extends AbstractTabController {
         this.tblKeys.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.C && event.isControlDown()) {  // Ctrl+C
                 mnuCopyKey();
+            } else if (event.getCode() == KeyCode.DELETE) {
+                deleteKeys();
             }
         });
 
