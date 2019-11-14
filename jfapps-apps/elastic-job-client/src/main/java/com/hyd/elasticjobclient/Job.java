@@ -1,9 +1,13 @@
 package com.hyd.elasticjobclient;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 @Data
 public class Job {
+
+    @JSONField(serialize = false)
+    private String key;
 
     private String jobName;
 

@@ -1,12 +1,19 @@
 package com.hyd.elasticjobclient;
 
-import com.google.gson.Gson;
+import static com.hyd.fx.builders.IconBuilder.icon;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Optional;
 import com.hyd.fx.builders.ButtonBuilder;
 import com.hyd.fx.builders.MenuBuilder;
+import com.hyd.fx.dialog.AlertDialog;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import io.elasticjob.lite.lifecycle.api.JobOperateAPI;
 import io.elasticjob.lite.lifecycle.internal.operate.JobOperateAPIImpl;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperRegistryCenter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -30,6 +37,8 @@ public class ElasticJobPane extends VBox {
 
     private ContextMenu contextMenu;
 
+    private TableRow<Job> currentRow;
+
     @SuppressWarnings("unchecked")
     public ElasticJobPane(String regName, ZookeeperRegistryCenter registryCenter, Tab parentTab) {
         this.setPadding(new Insets(10));
@@ -38,8 +47,10 @@ public class ElasticJobPane extends VBox {
         this.jobOperateAPI = new JobOperateAPIImpl(registryCenter);
         this.parentTab = parentTab;
         this.contextMenu = MenuBuilder.contextMenu(
-            MenuBuilder.menuItem("修改...", () -> {}),
-            MenuBuilder.menuItem("触发", () -> {})
+            MenuBuilder.menuItem("修改任务属性...", icon(FontAwesomeIcon.EDIT, "#44AA44"), this::modifyTask),
+            MenuBuilder.menuItem("触发任务执行", icon(FontAwesomeIcon.LIGHTBULB_ALT, "4444AA"), this::triggerTask),
+            new SeparatorMenuItem(),
+            MenuBuilder.menuItem("删除任务", icon(FontAwesomeIcon.TRASH, "#AA4444"), this::deleteTask)
         );
 
         //////////////////////////////////////////////////////////////
@@ -48,16 +59,24 @@ public class ElasticJobPane extends VBox {
         this.tableView.setRowFactory(tv -> {
             TableRow<Job> row = new TableRow<>();
             row.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                TableRow _row = (TableRow) event.getSource();
-                if (_row.isEmpty() || event.getButton() != MouseButton.SECONDARY) {
-                    return;
-                }
-
                 if (contextMenu.isShowing()) {
                     contextMenu.hide();
                 }
 
-                contextMenu.show(_row, event.getScreenX(), event.getScreenY());
+                TableRow _row = (TableRow) event.getSource();
+                if (_row.isEmpty()) {
+                    return;
+                }
+
+                if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+                    currentRow = _row;
+                    modifyTask();
+                }
+
+                if (event.getButton() == MouseButton.SECONDARY && event.getClickCount() == 1) {
+                    currentRow = _row;
+                    contextMenu.show(_row, event.getScreenX(), event.getScreenY());
+                }
             });
             return row;
         });
@@ -98,17 +117,72 @@ public class ElasticJobPane extends VBox {
         this.getChildren().add(buttons);
     }
 
-    public void init() {
-        Gson gson = new Gson();
+    private void triggerTask() {
+        if (currentRow == null) {
+            return;
+        }
 
+        Job job = currentRow.getItem();
+        this.jobOperateAPI.trigger(Optional.of(job.getJobName()), Optional.absent());
+        AlertDialog.info("触发成功", "任务 '" + job.getJobName() + "' 已触发。");
+    }
+
+    private void deleteTask() {
+        if (currentRow == null) {
+            return;
+        }
+
+        Job job = currentRow.getItem();
+        if (!AlertDialog.confirmOkCancel("删除任务", "确定要删除任务 '" + job.getJobName() + "' 吗？")) {
+            return;
+        }
+
+        registryCenter.remove("/" + job.getKey());
+        tableView.getItems().remove(job);
+    }
+
+    private void modifyTask() {
+        if (currentRow == null) {
+            return;
+        }
+
+        JobInfoDialog jobInfoDialog = new JobInfoDialog(
+            ElasticJobClientMain.getPrimaryStage(), currentRow.getItem()
+        );
+
+        jobInfoDialog.showAndWait();
+        if (jobInfoDialog.isOk()) {
+            tableView.refresh();
+
+            Job job = currentRow.getItem();
+            String configJson = registryCenter.get("/" + job.getKey() + "/config");
+            JSONObject jsonObject = JSON.parseObject(configJson);
+            jsonObject.put("jobName", job.getJobName());
+            jsonObject.put("description", job.getDescription());
+            jsonObject.put("cron", job.getCron());
+
+            registryCenter.persist("/" + job.getKey() + "/config", JSON.toJSONString(jsonObject));
+        }
+    }
+
+    public void init() {
         List<Job> jobs = registryCenter.getChildrenKeys("/").stream()
             .map(key -> {
-                String config = registryCenter.get("/" + key + "/config");
-                Job job = gson.fromJson(config, Job.class);
-                int numChildren = registryCenter.getNumChildren("/" + key + "/instances");
-                job.setInstanceCount(numChildren);
+                String configKey = "/" + key + "/config";
+                String instancesKey = "/" + key + "/instances";
+                String config = registryCenter.get(configKey);
+
+                if (config == null) {
+                    return null;
+                }
+
+                Job job = JSON.parseObject(config, Job.class);
+                job.setKey(key);
+                job.setInstanceCount(registryCenter.getNumChildren(instancesKey));
+
                 return job;
             })
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
         this.tableView.getItems().addAll(jobs);

@@ -4,20 +4,32 @@ import com.hyd.fx.app.AppThread;
 import com.hyd.fx.builders.ButtonBuilder;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
+import com.hyd.jfapps.appbase.*;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperConfiguration;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperRegistryCenter;
 import java.util.List;
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
 
-public class ElasticJobClientMain extends Application {
+@AppInfo(
+    name = "Elastic Job 客户端",
+    author = "yiding-he",
+    url = "https://github.com/yiding-he/jfapps",
+    category = AppCategory.RPC
+)
+public class ElasticJobClientMain extends JfappsApp {
+
+    private static Stage primaryStage;
+
+    public static Stage getPrimaryStage() {
+        return primaryStage;
+    }
 
     private ComboBox<String> addressesCombo;
 
@@ -26,14 +38,15 @@ public class ElasticJobClientMain extends Application {
     private Button openRegButton;
 
     public static void main(String[] args) {
-        Application.launch(ElasticJobClientMain.class);
+        JfappsAppLauncher.launchApp(ElasticJobClientMain.class);
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        primaryStage.setTitle("Elastic Job 客户端");
-        primaryStage.setScene(new Scene(root(), 1200, 600));
-        primaryStage.show();
+    public Parent getRoot() throws Exception {
+        primaryStage = appContext.getPrimaryStage();
+        primaryStage.setWidth(1000);
+        primaryStage.setHeight(600);
+        return root();
     }
 
     private BorderPane root() {
