@@ -109,10 +109,13 @@ public class ElasticJobPane extends VBox {
         buttons.setAlignment(Pos.BASELINE_RIGHT);
         buttons.setPadding(new Insets(10, 0, 0, 0));
         buttons.setSpacing(10);
-        buttons.getChildren().add(ButtonBuilder.button("关闭", () -> {
-            this.registryCenter.close();
-            this.parentTab.getTabPane().getTabs().remove(this.parentTab);
-        }));
+        buttons.getChildren().addAll(
+            ButtonBuilder.button("刷新", this::refreshJobs),
+            ButtonBuilder.button("关闭", () -> {
+                this.registryCenter.close();
+                this.parentTab.getTabPane().getTabs().remove(this.parentTab);
+            })
+        );
 
         this.getChildren().add(buttons);
     }
@@ -166,6 +169,10 @@ public class ElasticJobPane extends VBox {
     }
 
     public void init() {
+        refreshJobs();
+    }
+
+    private void refreshJobs() {
         List<Job> jobs = registryCenter.getChildrenKeys("/").stream()
             .map(key -> {
                 String configKey = "/" + key + "/config";
@@ -185,6 +192,6 @@ public class ElasticJobPane extends VBox {
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        this.tableView.getItems().addAll(jobs);
+        this.tableView.getItems().setAll(jobs);
     }
 }

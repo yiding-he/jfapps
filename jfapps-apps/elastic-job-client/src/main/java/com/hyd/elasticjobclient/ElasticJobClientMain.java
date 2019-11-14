@@ -44,8 +44,6 @@ public class ElasticJobClientMain extends JfappsApp {
     @Override
     public Parent getRoot() throws Exception {
         primaryStage = appContext.getPrimaryStage();
-        primaryStage.setWidth(1000);
-        primaryStage.setHeight(600);
         return root();
     }
 
