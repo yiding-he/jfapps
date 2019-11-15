@@ -1,13 +1,17 @@
 package com.hyd.elasticjobclient;
 
+import static com.hyd.elasticjobclient.Icons.icon;
+import static com.hyd.fx.builders.ButtonBuilder.iconButton;
+
 import com.hyd.fx.app.AppThread;
-import com.hyd.fx.builders.ButtonBuilder;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.appbase.*;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperConfiguration;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperRegistryCenter;
 import java.util.List;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -26,6 +30,10 @@ import org.apache.commons.lang3.StringUtils;
 public class ElasticJobClientMain extends JfappsApp {
 
     private static Stage primaryStage;
+
+    private BorderPane borderPane;
+
+    private Label placeHolderLabel = new Label("");
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -48,7 +56,12 @@ public class ElasticJobClientMain extends JfappsApp {
     }
 
     private BorderPane root() {
-        return new BorderPane(registryTabs(), addressBar(), null, null, null);
+        borderPane = new BorderPane(
+            placeHolderLabel,
+            addressBar(), null, null, null
+        );
+        borderPane.setPrefSize(900, 600);
+        return borderPane;
     }
 
     private Node addressBar() {
@@ -60,25 +73,38 @@ public class ElasticJobClientMain extends JfappsApp {
         hBox.getChildren().addAll(
             label(),
             addressesCombo = addresses(),
-            openRegButton = ButtonBuilder.button("打开", this::openRegistry)
+            openRegButton = iconButton("打开", icon(FontAwesomeIcon.DESKTOP), this::openRegistry),
+            iconButton("清空", icon(FontAwesomeIcon.TRASH), this::clearAddresses)
         );
         return hBox;
     }
 
+    private void clearAddresses() {
+
+        if (!AlertDialog.confirmYesNo("清空历史", "是否要删除所有历史记录？")) {
+            return;
+        }
+
+        addressesCombo.getItems().clear();
+        addPredefinedAddress(addressesCombo);
+        UserPreferences.save(ConfigKey.ServerAddresses, "");
+    }
+
     private Label label() {
-        Label label = new Label("注册中心地址（ip:port/name）：");
+        Label label = new Label("注册中心地址（[alias]ip:port/name）：");
         label.setMinWidth(Region.USE_PREF_SIZE);
         return label;
     }
 
     private void openRegistry() {
         String address = addressesCombo.getValue();
-        if (address == null || !address.matches("^.+:\\d+/.+$")) {
+        if (address == null || !address.matches("^\\[.+].+:\\d+/.+$")) {
             AlertDialog.error("地址格式不正确。");
             return;
         }
 
-        String host = StringUtils.substringBefore(address, "/");
+        String alias = StringUtils.substringBefore(address, "]") + "]";
+        String host = StringUtils.substringAfter(StringUtils.substringBefore(address, "/"), "]");
         String regName = StringUtils.substringAfter(address, "/");
 
         BackgroundTask.runTask(() -> {
@@ -86,23 +112,31 @@ public class ElasticJobClientMain extends JfappsApp {
             ZookeeperRegistryCenter registryCenter = new ZookeeperRegistryCenter(conf);
             registryCenter.init();
 
+            addAddress(addressesCombo.getItems(), address);
+
             List<String> addresses = UserPreferences.get(ConfigKey.ServerAddresses);
             if (!addresses.contains(address)) {
-                addressesCombo.getItems().add(address);
                 UserPreferences.append(ConfigKey.ServerAddresses, address);
             }
 
             AppThread.runUIThread(() -> {
-                Tab tab = new Tab(regName);
-                ElasticJobPane elasticJobPane = new ElasticJobPane(regName, registryCenter, tab);
+
+                if (registryTabs == null) {
+                    registryTabs = new TabPane();
+                    borderPane.setCenter(registryTabs);
+                }
+
+                Tab tab = new Tab(alias + regName);
+                ElasticJobPane elasticJobPane = new ElasticJobPane(registryCenter, tab);
                 tab.setContent(elasticJobPane);
                 tab.setClosable(false);
                 registryTabs.getTabs().add(tab);
-
                 elasticJobPane.init();
+                registryTabs.getSelectionModel().select(tab);
             });
 
         }).whenBeforeStart(() -> {
+            placeHolderLabel.setText("第一次打开会比较慢，请耐心等待……");
             openRegButton.setDisable(true);
         }).whenTaskFinish(() -> {
             openRegButton.setDisable(false);
@@ -118,14 +152,22 @@ public class ElasticJobClientMain extends JfappsApp {
 
         List<String> addresses = UserPreferences.get(ConfigKey.ServerAddresses);
         c.getItems().addAll(addresses);
+        addPredefinedAddress(c);
 
         HBox.setHgrow(c, Priority.ALWAYS);
         return c;
     }
 
-    private TabPane registryTabs() {
-        registryTabs = new TabPane();
-        return registryTabs;
+    private void addPredefinedAddress(ComboBox<String> c) {
+        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/frxsJob");
+        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/fundJob");
+        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/accountantJob");
+        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/fundClearingJob");
     }
 
+    private void addAddress(ObservableList<String> list, String item) {
+        if (!list.contains(item)) {
+            list.add(item);
+        }
+    }
 }

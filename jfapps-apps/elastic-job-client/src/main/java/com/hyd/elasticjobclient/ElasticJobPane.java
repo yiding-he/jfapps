@@ -25,8 +25,6 @@ import javafx.scene.layout.*;
 
 public class ElasticJobPane extends VBox {
 
-    private String regName;
-
     private ZookeeperRegistryCenter registryCenter;
 
     private JobOperateAPI jobOperateAPI;
@@ -40,17 +38,16 @@ public class ElasticJobPane extends VBox {
     private TableRow<Job> currentRow;
 
     @SuppressWarnings("unchecked")
-    public ElasticJobPane(String regName, ZookeeperRegistryCenter registryCenter, Tab parentTab) {
+    public ElasticJobPane(ZookeeperRegistryCenter registryCenter, Tab parentTab) {
         this.setPadding(new Insets(10));
-        this.regName = regName;
         this.registryCenter = registryCenter;
         this.jobOperateAPI = new JobOperateAPIImpl(registryCenter);
         this.parentTab = parentTab;
         this.contextMenu = MenuBuilder.contextMenu(
-            MenuBuilder.menuItem("修改任务属性...", icon(FontAwesomeIcon.EDIT, "#44AA44"), this::modifyTask),
-            MenuBuilder.menuItem("触发任务执行", icon(FontAwesomeIcon.LIGHTBULB_ALT, "4444AA"), this::triggerTask),
+            MenuBuilder.menuItem("修改任务属性...", icon(FontAwesomeIcon.EDIT, "#000000"), this::modifyTask),
+            MenuBuilder.menuItem("触发任务执行", icon(FontAwesomeIcon.LIGHTBULB_ALT, "#000000"), this::triggerTask),
             new SeparatorMenuItem(),
-            MenuBuilder.menuItem("删除任务", icon(FontAwesomeIcon.TRASH, "#AA4444"), this::deleteTask)
+            MenuBuilder.menuItem("删除任务", icon(FontAwesomeIcon.TRASH, "#000000"), this::deleteTask)
         );
 
         //////////////////////////////////////////////////////////////
@@ -87,9 +84,6 @@ public class ElasticJobPane extends VBox {
         TableColumn<Job, String> jobDescCol = new TableColumn<>("任务描述");
         jobDescCol.setCellValueFactory(new PropertyValueFactory<>("description"));
 
-        TableColumn<Job, String> jobTypeCol = new TableColumn<>("任务类名");
-        jobTypeCol.setCellValueFactory(new PropertyValueFactory<>("jobClass"));
-
         TableColumn<Job, String> jobCronCol = new TableColumn<>("执行计划");
         jobCronCol.setCellValueFactory(new PropertyValueFactory<>("cron"));
 
@@ -97,7 +91,7 @@ public class ElasticJobPane extends VBox {
         jobInstCol.setCellValueFactory(new PropertyValueFactory<>("instanceCount"));
 
         this.tableView.getColumns().addAll(
-            jobNameCol, jobDescCol, jobTypeCol, jobCronCol, jobInstCol
+            jobNameCol, jobDescCol, jobCronCol, jobInstCol
         );
 
         this.getChildren().add(tableView);
