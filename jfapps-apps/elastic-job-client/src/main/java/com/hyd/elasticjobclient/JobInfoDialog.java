@@ -27,7 +27,7 @@ public class JobInfoDialog extends FormDialog {
         jobNameField.getTextField().setText(job.getJobName());
         jobDescField.getTextField().setText(job.getDescription());
         jobCronField.getTextField().setText(job.getCron());
-        jobParamField.getTextArea().setText(job.getParam());
+        jobParamField.getTextArea().setText(job.getJobParameter());
 
         addField(jobNameField);
         addField(jobDescField);
@@ -40,7 +40,7 @@ public class JobInfoDialog extends FormDialog {
     protected void okButtonClicked(ActionEvent event) {
         this.job.setDescription(jobDescField.getText());
         this.job.setCron(jobCronField.getText());
-        this.job.setParam(jobParamField.getText());
+        this.job.setJobParameter(jobParamField.getText());
         closeOK();
     }
 }

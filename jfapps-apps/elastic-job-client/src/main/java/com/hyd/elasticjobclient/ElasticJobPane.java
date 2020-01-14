@@ -157,7 +157,7 @@ public class ElasticJobPane extends VBox {
             jsonObject.put("jobName", job.getJobName());
             jsonObject.put("description", job.getDescription());
             jsonObject.put("cron", job.getCron());
-            jsonObject.put("jobParameter", job.getParam());
+            jsonObject.put("jobParameter", job.getJobParameter());
 
             registryCenter.persist("/" + job.getKey() + "/config", JSON.toJSONString(jsonObject));
         }
