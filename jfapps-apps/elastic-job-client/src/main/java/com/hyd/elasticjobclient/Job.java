@@ -17,6 +17,8 @@ public class Job {
 
     private String cron;
 
+    private String param;
+
     private String shardingTotalCount;
 
     private String shardingItemParameters;

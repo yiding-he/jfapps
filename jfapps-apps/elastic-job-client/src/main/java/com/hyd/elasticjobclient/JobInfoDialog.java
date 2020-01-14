@@ -1,15 +1,18 @@
 package com.hyd.elasticjobclient;
 
-import com.hyd.fx.dialog.form.FormDialog;
-import com.hyd.fx.dialog.form.TextFormField;
+import com.hyd.fx.dialog.form.*;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 
 public class JobInfoDialog extends FormDialog {
 
     private final TextFormField jobNameField = new TextFormField("任务名称", "");
+
     private final TextFormField jobDescField = new TextFormField("任务描述", "");
+
     private final TextFormField jobCronField = new TextFormField("Cron 表达式", "");
+
+    private final TextAreaFormField jobParamField = new TextAreaFormField("触发参数", "", 5, true);
 
     private Job job;
 
@@ -19,14 +22,17 @@ public class JobInfoDialog extends FormDialog {
         setWidth(500);
         this.job = job;
 
-        jobNameField.getTextField().setText(job.getJobName());
         jobNameField.getTextField().setEditable(false);
+
+        jobNameField.getTextField().setText(job.getJobName());
         jobDescField.getTextField().setText(job.getDescription());
         jobCronField.getTextField().setText(job.getCron());
+        jobParamField.getTextArea().setText(job.getParam());
 
         addField(jobNameField);
         addField(jobDescField);
         addField(jobCronField);
+        addField(jobParamField);
     }
 
 
@@ -34,6 +40,7 @@ public class JobInfoDialog extends FormDialog {
     protected void okButtonClicked(ActionEvent event) {
         this.job.setDescription(jobDescField.getText());
         this.job.setCron(jobCronField.getText());
+        this.job.setParam(jobParamField.getText());
         closeOK();
     }
 }
