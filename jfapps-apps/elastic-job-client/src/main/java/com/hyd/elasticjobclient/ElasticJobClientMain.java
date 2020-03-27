@@ -6,7 +6,10 @@ import static com.hyd.fx.builders.ButtonBuilder.iconButton;
 import com.hyd.fx.app.AppThread;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
-import com.hyd.jfapps.appbase.*;
+import com.hyd.jfapps.appbase.AppCategory;
+import com.hyd.jfapps.appbase.AppInfo;
+import com.hyd.jfapps.appbase.JfappsApp;
+import com.hyd.jfapps.appbase.JfappsAppLauncher;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperConfiguration;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperRegistryCenter;
@@ -16,8 +19,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
 
@@ -159,10 +169,6 @@ public class ElasticJobClientMain extends JfappsApp {
     }
 
     private void addPredefinedAddress(ComboBox<String> c) {
-        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/frxsJob");
-        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/fundJob");
-        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/accountantJob");
-        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/fundClearingJob");
     }
 
     private void addAddress(ObservableList<String> list, String item) {
