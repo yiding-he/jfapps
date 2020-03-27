@@ -174,20 +174,28 @@ public class KeyTabController extends AbstractTabController {
     private void runSearch(String pattern, int limit, ObservableList<KeyItem> items) {
         try (Jedis jedis = JedisManager.getJedis()) {
             String cursor = ScanParams.SCAN_POINTER_START;
-            ScanParams scanParams = new ScanParams().match(pattern).count(1000);
+            ScanParams scanParams = new ScanParams().match(pattern).count(200);
             ScanResult<String> result;
             do {
+                if (searchCancelled) {
+                    break;
+                }
+
                 result = jedis.scan(cursor, scanParams);
                 cursor = result.getStringCursor();
 
-                result.getResult().forEach(key -> {
+                for (String key : result.getResult()) {
                     String type = jedis.type(key);
                     int length = getLength(key, type, jedis);
                     String expireAt = getExpireAt(key, jedis);
                     items.add(new KeyItem(key, type, length, expireAt));
-                });
 
-            } while (!result.isCompleteIteration() && items.size() < limit && !searchCancelled);
+                    if (searchCancelled) {
+                        break;
+                    }
+                }
+
+            } while (!result.isCompleteIteration() && items.size() < limit);
         }
     }
 
