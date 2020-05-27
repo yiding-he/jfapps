@@ -43,7 +43,7 @@ public class ElasticJobClientMain extends JfappsApp {
 
     private BorderPane borderPane;
 
-    private Label placeHolderLabel = new Label("");
+    private final Label placeHolderLabel = new Label("");
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -122,8 +122,6 @@ public class ElasticJobClientMain extends JfappsApp {
             ZookeeperRegistryCenter registryCenter = new ZookeeperRegistryCenter(conf);
             registryCenter.init();
 
-            addAddress(addressesCombo.getItems(), address);
-
             List<String> addresses = UserPreferences.get(ConfigKey.ServerAddresses);
             if (!addresses.contains(address)) {
                 UserPreferences.append(ConfigKey.ServerAddresses, address);
@@ -139,10 +137,12 @@ public class ElasticJobClientMain extends JfappsApp {
                 Tab tab = new Tab(alias + regName);
                 ElasticJobPane elasticJobPane = new ElasticJobPane(registryCenter, tab);
                 tab.setContent(elasticJobPane);
-                tab.setClosable(false);
+                tab.setOnClosed(event -> registryCenter.close());
                 registryTabs.getTabs().add(tab);
                 elasticJobPane.init();
                 registryTabs.getSelectionModel().select(tab);
+
+                addAddress(addressesCombo.getItems(), address);
             });
 
         }).whenBeforeStart(() -> {
@@ -169,6 +169,8 @@ public class ElasticJobClientMain extends JfappsApp {
     }
 
     private void addPredefinedAddress(ComboBox<String> c) {
+        addAddress(c.getItems(), "[DEV2]172.16.10.63:2181/frxsJob");
+        addAddress(c.getItems(), "[UAT]172.16.10.21:2181/frxsJob");
     }
 
     private void addAddress(ObservableList<String> list, String item) {

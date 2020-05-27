@@ -48,9 +48,18 @@ public class ZkService {
             ZkNode zkNode = new ZkNode();
             zkNode.setName(name);
             zkNode.setFullName(StringUtils.removeEnd(currentPath, "/") + "/" + name);
-            zkNode.setChildrenCount(zkClient.countChildren(appendCurrentLocation(name)));
+            zkNode.setChildrenCount(getChildrenCount(name));
             return zkNode;
         }).collect(Collectors.toList());
+    }
+
+    private int getChildrenCount(String name) {
+        try {
+            return zkClient.countChildren(appendCurrentLocation(name));
+        } catch (Exception e) {
+            log.error("", e);
+            return 0;
+        }
     }
 
     public void connect(String serverAddress, int timeoutMillis) {

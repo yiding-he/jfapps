@@ -19,7 +19,7 @@ public class Job {
 
     private String jobParameter;
 
-    private String shardingTotalCount;
+    private int shardingTotalCount = 1;
 
     private String shardingItemParameters;
 
