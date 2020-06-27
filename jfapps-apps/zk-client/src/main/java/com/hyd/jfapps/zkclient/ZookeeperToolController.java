@@ -5,18 +5,40 @@ import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
 import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
 
 import com.hyd.fx.NodeUtils;
+import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.zkclient.config.Config;
 import com.hyd.jfapps.zkclient.config.UserPreferences;
 import com.hyd.jfapps.zkclient.dialog.NewNodeDialog;
-import com.hyd.jfapps.zkclient.event.*;
+import com.hyd.jfapps.zkclient.event.AddNodeRequest;
+import com.hyd.jfapps.zkclient.event.ChildrenChangedEvent;
+import com.hyd.jfapps.zkclient.event.DeleteNodeRequest;
+import com.hyd.jfapps.zkclient.event.Listeners;
+import com.hyd.jfapps.zkclient.event.LocationChangedEvent;
+import com.hyd.jfapps.zkclient.event.NodeDataChangedEvent;
+import com.hyd.jfapps.zkclient.event.ZkConnectedEvent;
+import com.hyd.jfapps.zkclient.event.ZkConnectingEvent;
+import com.hyd.jfapps.zkclient.event.ZkDisconnectedEvent;
+import com.hyd.jfapps.zkclient.event.ZkNodeSelectedEvent;
+import com.hyd.jfapps.zkclient.event.ZkNodeUnselectedEvent;
 import com.hyd.jfapps.zkclient.node.ZkNodePane;
 import com.hyd.jfapps.zkclient.zk.ZkService;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.function.Consumer;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import lombok.Getter;
@@ -33,10 +55,6 @@ public class ZookeeperToolController {
     private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT = ThreadLocal.withInitial(
         () -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     );
-
-    private static String format(Date date) {
-        return DATE_FORMAT.get().format(date);
-    }
 
     private static String format(long timestamp) {
         return DATE_FORMAT.get().format(new Date(timestamp));
@@ -91,27 +109,30 @@ public class ZookeeperToolController {
     public void initialize() {
         comboServerAddr.getItems().addAll(UserPreferences.get(Config.ServerAddresses));
 
-        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> {
-            forEachNodePane(nodeDataPane -> {
-                boolean match = nodeDataPane
-                    .getZkNode().getName().toLowerCase()
-                    .contains(txtSearch.getText().trim().toLowerCase());
-                nodeDataPane.setVisible(match);
-            });
-        });
+        txtSearch.textProperty().addListener((observable, oldValue, newValue) -> forEachNodePane(nodeDataPane -> {
+            boolean match = nodeDataPane
+                .getZkNode().getName().toLowerCase()
+                .contains(txtSearch.getText().trim().toLowerCase());
+            nodeDataPane.setVisible(match);
+        }));
 
-        Listeners.addListener(ZkConnectedEvent.class, event -> {
+        Listeners.addListener(ZkConnectedEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("服务器已连接。");
             btnConnect.setText("断开连接");
             mainPane.setDisable(false);
             service.setCurrentLocation(Collections.emptyList());
-        });
+        }));
 
-        Listeners.addListener(ZkDisconnectedEvent.class, event -> {
+        Listeners.addListener(ZkDisconnectedEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("尚未连接服务器。");
             btnConnect.setText("连接服务器");
             mainPane.setDisable(true);
-        });
+        }));
+
+        Listeners.addListener(ZkConnectingEvent.class, event -> runUIThread(() -> {
+            lblStatus.setText("正在连接 " + event.getAddress() + "...");
+            btnConnect.setDisable(true);
+        }));
 
         Listeners.addListener(LocationChangedEvent.class, event -> {
             log.info("location -> {}", service.getCurrentLocation());
@@ -120,19 +141,15 @@ public class ZookeeperToolController {
             refreshNodes();
         });
 
-        Listeners.addListener(ZkNodeUnselectedEvent.class, event -> {
-            nodeDataPane.setDisable(true);
-        });
+        Listeners.addListener(ZkNodeUnselectedEvent.class, event -> nodeDataPane.setDisable(true));
 
-        Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
-            forEachNodePane(node -> {
-                if (node == event.getZkNodePane()) {
-                    FxUtil.switchClass(node, "zk-node-unselected", "zk-node-selected");
-                } else {
-                    FxUtil.switchClass(node, "zk-node-selected", "zk-node-unselected");
-                }
-            });
-        });
+        Listeners.addListener(ZkNodeSelectedEvent.class, event -> forEachNodePane(node -> {
+            if (node == event.getZkNodePane()) {
+                FxUtil.switchClass(node, "zk-node-unselected", "zk-node-selected");
+            } else {
+                FxUtil.switchClass(node, "zk-node-selected", "zk-node-unselected");
+            }
+        }));
 
         Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
             currentSelectedNode = event.getZkNodePane();
@@ -143,25 +160,16 @@ public class ZookeeperToolController {
             refreshNodeMata(service.getNodeMetadata(name));
         });
 
-        Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
-            service.watchNode(event.getZkNodePane().getZkNode().getFullName());
-        });
+        Listeners.addListener(ZkNodeSelectedEvent.class,
+            event -> service.watchNode(event.getZkNodePane().getZkNode().getFullName()));
 
-        Listeners.addListener(NodeDataChangedEvent.class, event -> {
-            refreshNodeData(event.getData());
-        });
+        Listeners.addListener(NodeDataChangedEvent.class, event -> refreshNodeData(event.getData()));
 
-        Listeners.addListener(ChildrenChangedEvent.class, event -> {
-            runUIThread(this::refreshNodes);
-        });
+        Listeners.addListener(ChildrenChangedEvent.class, event -> runUIThread(this::refreshNodes));
 
-        Listeners.addListener(AddNodeRequest.class, event -> {
-            newNode(event.getParent());
-        });
+        Listeners.addListener(AddNodeRequest.class, event -> newNode(event.getParent()));
 
-        Listeners.addListener(DeleteNodeRequest.class, event -> {
-            service.deleteNode(event.getNodePath());
-        });
+        Listeners.addListener(DeleteNodeRequest.class, event -> service.deleteNode(event.getNodePath()));
     }
 
     private void forEachNodePane(Consumer<ZkNodePane> consumer) {
@@ -272,10 +280,21 @@ public class ZookeeperToolController {
 
             UserPreferences.append(Config.ServerAddresses, comboServerAddr.getValue());
 
-            service.connect(
-                comboServerAddr.getValue(),
-                comboConnTimeout.getValue() * 1000
-            );
+            BackgroundTask.runTask(
+                () -> service.connect(
+                    comboServerAddr.getValue(),
+                    comboConnTimeout.getValue() * 1000
+                )
+            ).whenTaskFail(
+                e -> {
+                    AlertDialog.error("连接失败", e);
+                    Listeners.publish(new ZkDisconnectedEvent());
+                }
+            ).whenBeforeStart(
+                () -> Listeners.publish(new ZkConnectingEvent(comboServerAddr.getValue()))
+            ).whenTaskSuccess(
+                () -> Listeners.publish(new ZkConnectedEvent())
+            ).start();
         }
     }
 

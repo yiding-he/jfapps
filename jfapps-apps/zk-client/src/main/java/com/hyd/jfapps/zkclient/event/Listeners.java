@@ -1,11 +1,15 @@
 package com.hyd.jfapps.zkclient.event;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class Listeners {
 
-    private static Map<Class, List<Listener>> listeners = new ConcurrentHashMap<>();
+    private static final Map<Class, List<Listener>> listeners = new ConcurrentHashMap<>();
 
     @FunctionalInterface
     public interface Listener<T> {
@@ -26,8 +30,7 @@ public class Listeners {
             .add(listener);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> void publish(Object event) {
+    public static void publish(Object event) {
 
         // 复制一份 List 给当前线程使用，以免出现并发异常
         List<Listener> listenerList = new ArrayList<>(
