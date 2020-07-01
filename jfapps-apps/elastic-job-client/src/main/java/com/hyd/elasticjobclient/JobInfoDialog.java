@@ -47,6 +47,7 @@ public class JobInfoDialog extends FormDialog {
         this.job.setDescription(jobDescField.getText());
         this.job.setCron(jobCronField.getText());
         this.job.setJobParameter(jobParamField.getText());
+        this.job.setShardingTotalCount(jobShardField.getValue());
         closeOK();
     }
 }

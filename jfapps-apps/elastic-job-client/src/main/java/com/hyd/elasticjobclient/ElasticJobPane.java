@@ -210,7 +210,7 @@ public class ElasticJobPane extends VBox {
         }
 
         registryCenter.remove("/" + job.getKey());
-        tableView.getItems().remove(job);
+        refreshJobs();
     }
 
     private void modifyTask() {
