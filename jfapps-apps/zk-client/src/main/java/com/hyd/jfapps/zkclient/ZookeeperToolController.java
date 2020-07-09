@@ -29,11 +29,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TabPane;
@@ -59,6 +61,8 @@ public class ZookeeperToolController {
     private static String format(long timestamp) {
         return DATE_FORMAT.get().format(new Date(timestamp));
     }
+
+    public ProgressBar prgProcessing;
 
     public ComboBox<String> comboServerAddr;
 
@@ -119,6 +123,8 @@ public class ZookeeperToolController {
         Listeners.addListener(ZkConnectedEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("服务器已连接。");
             btnConnect.setText("断开连接");
+            btnConnect.setDisable(false);
+            prgProcessing.setVisible(false);
             mainPane.setDisable(false);
             service.setCurrentLocation(Collections.emptyList());
         }));
@@ -126,11 +132,14 @@ public class ZookeeperToolController {
         Listeners.addListener(ZkDisconnectedEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("尚未连接服务器。");
             btnConnect.setText("连接服务器");
+            prgProcessing.setVisible(false);
+            fpChildNodes.getChildren().clear();
             mainPane.setDisable(true);
         }));
 
         Listeners.addListener(ZkConnectingEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("正在连接 " + event.getAddress() + "...");
+            prgProcessing.setVisible(true);
             btnConnect.setDisable(true);
         }));
 
@@ -251,22 +260,37 @@ public class ZookeeperToolController {
 
     private void refreshNodes() {
         fpChildNodes.getChildren().clear();
-        txtSearch.setText(null);
-
-        service.listChildren().forEach(item -> {
-            ZkNodePane zkNodePane = new ZkNodePane(service.getCurrentLocation(), item);
-            zkNodePane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
-                ZkNodePane pane = (ZkNodePane) event.getSource();
-                Listeners.publish(new ZkNodeSelectedEvent(pane));
-                if (event.getClickCount() == 2 && pane.getZkNode().getChildrenCount() > 0) {
-                    service.goInto(item.getName());
-                }
-            });
-            NodeUtils.setManaged(zkNodePane);
-            fpChildNodes.getChildren().add(zkNodePane);
-        });
-
         Listeners.publish(new ZkNodeUnselectedEvent());
+
+        txtSearch.setText(null);
+        lblStatus.setText("正在查询节点...");
+        prgProcessing.setVisible(true);
+        AtomicInteger nodeCounter = new AtomicInteger();
+
+        BackgroundTask.runTask(() -> {
+            service.listChildren().forEach(item -> {
+                nodeCounter.incrementAndGet();
+                ZkNodePane zkNodePane = new ZkNodePane(service.getCurrentLocation(), item);
+                zkNodePane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+                    ZkNodePane pane = (ZkNodePane) event.getSource();
+                    Listeners.publish(new ZkNodeSelectedEvent(pane));
+                    if (event.getClickCount() == 2 && pane.getZkNode().getChildrenCount() > 0) {
+                        service.goInto(item.getName());
+                    }
+                });
+                runUIThread(() -> {
+                    NodeUtils.setManaged(zkNodePane);
+                    fpChildNodes.getChildren().add(zkNodePane);
+                });
+            });
+
+        }).whenTaskFail(e -> {
+            AlertDialog.error("打开节点失败", e);
+        }).whenTaskFinish(() -> {
+            prgProcessing.setVisible(false);
+            lblStatus.setText("节点查询完毕，共 " + nodeCounter.get() + " 个节点。");
+        }).start();
+
     }
 
     public void btnConnectClicked() {
@@ -285,12 +309,10 @@ public class ZookeeperToolController {
                     comboServerAddr.getValue(),
                     comboConnTimeout.getValue() * 1000
                 )
-            ).whenTaskFail(
-                e -> {
-                    AlertDialog.error("连接失败", e);
-                    Listeners.publish(new ZkDisconnectedEvent());
-                }
-            ).whenBeforeStart(
+            ).whenTaskFail(e -> {
+                AlertDialog.error("连接失败", e);
+                Listeners.publish(new ZkDisconnectedEvent());
+            }).whenBeforeStart(
                 () -> Listeners.publish(new ZkConnectingEvent(comboServerAddr.getValue()))
             ).whenTaskSuccess(
                 () -> Listeners.publish(new ZkConnectedEvent())
