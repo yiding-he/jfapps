@@ -1,46 +1,19 @@
 package com.hyd.jfapps.zkclient;
 
-import static com.hyd.fx.app.AppThread.runUIThread;
-import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
-import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
-
 import com.hyd.fx.NodeUtils;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.fx.dialog.AlertDialog;
 import com.hyd.jfapps.zkclient.config.Config;
 import com.hyd.jfapps.zkclient.config.UserPreferences;
 import com.hyd.jfapps.zkclient.dialog.NewNodeDialog;
-import com.hyd.jfapps.zkclient.event.AddNodeRequest;
-import com.hyd.jfapps.zkclient.event.ChildrenChangedEvent;
-import com.hyd.jfapps.zkclient.event.DeleteNodeRequest;
-import com.hyd.jfapps.zkclient.event.Listeners;
-import com.hyd.jfapps.zkclient.event.LocationChangedEvent;
-import com.hyd.jfapps.zkclient.event.NodeDataChangedEvent;
-import com.hyd.jfapps.zkclient.event.ZkConnectedEvent;
-import com.hyd.jfapps.zkclient.event.ZkConnectingEvent;
-import com.hyd.jfapps.zkclient.event.ZkDisconnectedEvent;
-import com.hyd.jfapps.zkclient.event.ZkNodeSelectedEvent;
-import com.hyd.jfapps.zkclient.event.ZkNodeUnselectedEvent;
+import com.hyd.jfapps.zkclient.event.NavigationEvents;
+import com.hyd.jfapps.zkclient.event.NodeEvents;
+import com.hyd.jfapps.zkclient.event.ZkEvents.*;
 import com.hyd.jfapps.zkclient.node.ZkNodePane;
+import com.hyd.jfapps.zkclient.zk.ZkNode;
 import com.hyd.jfapps.zkclient.zk.ZkService;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import lombok.Getter;
@@ -48,6 +21,20 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.data.Stat;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
+import static com.hyd.fx.app.AppEvents.fireAppEvent;
+import static com.hyd.fx.app.AppEvents.onAppEvent;
+import static com.hyd.fx.app.AppThread.runUIThread;
+import static com.hyd.jfapps.zkclient.FxUtil.iconLabel;
+import static com.hyd.jfapps.zkclient.FxUtil.iconLink;
 
 @Getter
 @Setter
@@ -120,7 +107,7 @@ public class ZookeeperToolController {
             nodeDataPane.setVisible(match);
         }));
 
-        Listeners.addListener(ZkConnectedEvent.class, event -> runUIThread(() -> {
+        onAppEvent(ZkConnectedEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("服务器已连接。");
             btnConnect.setText("断开连接");
             btnConnect.setDisable(false);
@@ -129,7 +116,16 @@ public class ZookeeperToolController {
             service.setCurrentLocation(Collections.emptyList());
         }));
 
-        Listeners.addListener(ZkDisconnectedEvent.class, event -> runUIThread(() -> {
+        onAppEvent(ZkConnectFailedEvent.class, event -> runUIThread(() -> {
+            lblStatus.setText("尚未连接服务器。");
+            btnConnect.setText("连接服务器");
+            btnConnect.setDisable(false);
+            prgProcessing.setVisible(false);
+            fpChildNodes.getChildren().clear();
+            mainPane.setDisable(true);
+        }));
+
+        onAppEvent(ZkDisconnectedEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("尚未连接服务器。");
             btnConnect.setText("连接服务器");
             prgProcessing.setVisible(false);
@@ -137,22 +133,22 @@ public class ZookeeperToolController {
             mainPane.setDisable(true);
         }));
 
-        Listeners.addListener(ZkConnectingEvent.class, event -> runUIThread(() -> {
+        onAppEvent(ZkConnectingEvent.class, event -> runUIThread(() -> {
             lblStatus.setText("正在连接 " + event.getAddress() + "...");
             prgProcessing.setVisible(true);
             btnConnect.setDisable(true);
         }));
 
-        Listeners.addListener(LocationChangedEvent.class, event -> {
+        onAppEvent(NavigationEvents.LocationChangedEvent.class, event -> {
             log.info("location -> {}", service.getCurrentLocation());
             service.watch();
             updateLocation();
             refreshNodes();
         });
 
-        Listeners.addListener(ZkNodeUnselectedEvent.class, event -> nodeDataPane.setDisable(true));
+        onAppEvent(ZkNodeUnselectedEvent.class, event -> nodeDataPane.setDisable(true));
 
-        Listeners.addListener(ZkNodeSelectedEvent.class, event -> forEachNodePane(node -> {
+        onAppEvent(ZkNodeSelectedEvent.class, event -> forEachNodePane(node -> {
             if (node == event.getZkNodePane()) {
                 FxUtil.switchClass(node, "zk-node-unselected", "zk-node-selected");
             } else {
@@ -160,7 +156,7 @@ public class ZookeeperToolController {
             }
         }));
 
-        Listeners.addListener(ZkNodeSelectedEvent.class, event -> {
+        onAppEvent(ZkNodeSelectedEvent.class, event -> {
             currentSelectedNode = event.getZkNodePane();
             nodeDataPane.setDisable(false);
 
@@ -169,16 +165,16 @@ public class ZookeeperToolController {
             refreshNodeMata(service.getNodeMetadata(name));
         });
 
-        Listeners.addListener(ZkNodeSelectedEvent.class,
+        onAppEvent(ZkNodeSelectedEvent.class,
             event -> service.watchNode(event.getZkNodePane().getZkNode().getFullName()));
 
-        Listeners.addListener(NodeDataChangedEvent.class, event -> refreshNodeData(event.getData()));
+        onAppEvent(NodeEvents.NodeDataChangedEvent.class, event -> refreshNodeData(event.getData()));
 
-        Listeners.addListener(ChildrenChangedEvent.class, event -> runUIThread(this::refreshNodes));
+        onAppEvent(NodeEvents.ChildrenChangedEvent.class, event -> runUIThread(this::refreshNodes));
 
-        Listeners.addListener(AddNodeRequest.class, event -> newNode(event.getParent()));
+        onAppEvent(NodeEvents.AddNodeRequest.class, event -> newNode(event.getParent()));
 
-        Listeners.addListener(DeleteNodeRequest.class, event -> service.deleteNode(event.getNodePath()));
+        onAppEvent(NodeEvents.DeleteNodeRequest.class, event -> service.deleteNode(event.getNodePath()));
     }
 
     private void forEachNodePane(Consumer<ZkNodePane> consumer) {
@@ -260,7 +256,7 @@ public class ZookeeperToolController {
 
     private void refreshNodes() {
         fpChildNodes.getChildren().clear();
-        Listeners.publish(new ZkNodeUnselectedEvent());
+        fireAppEvent(new ZkNodeUnselectedEvent());
 
         txtSearch.setText(null);
         lblStatus.setText("正在查询节点...");
@@ -268,12 +264,13 @@ public class ZookeeperToolController {
         AtomicInteger nodeCounter = new AtomicInteger();
 
         BackgroundTask.runTask(() -> {
-            service.listChildren().forEach(item -> {
+            List<ZkNode> children = service.listChildren();
+            children.forEach(item -> {
                 nodeCounter.incrementAndGet();
                 ZkNodePane zkNodePane = new ZkNodePane(service.getCurrentLocation(), item);
                 zkNodePane.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
                     ZkNodePane pane = (ZkNodePane) event.getSource();
-                    Listeners.publish(new ZkNodeSelectedEvent(pane));
+                    fireAppEvent(new ZkNodeSelectedEvent(pane));
                     if (event.getClickCount() == 2 && pane.getZkNode().getChildrenCount() > 0) {
                         service.goInto(item.getName());
                     }
@@ -311,11 +308,11 @@ public class ZookeeperToolController {
                 )
             ).whenTaskFail(e -> {
                 AlertDialog.error("连接失败", e);
-                Listeners.publish(new ZkDisconnectedEvent());
+                fireAppEvent(new ZkConnectFailedEvent());
             }).whenBeforeStart(
-                () -> Listeners.publish(new ZkConnectingEvent(comboServerAddr.getValue()))
+                () -> fireAppEvent(new ZkConnectingEvent(comboServerAddr.getValue()))
             ).whenTaskSuccess(
-                () -> Listeners.publish(new ZkConnectedEvent())
+                () -> fireAppEvent(new ZkConnectedEvent())
             ).start();
         }
     }

@@ -1,27 +1,33 @@
 package com.hyd.jfapps.zkclient.node;
 
+import com.hyd.fx.dialog.AlertDialog;
+import com.hyd.fx.system.ClipboardHelper;
+import com.hyd.jfapps.zkclient.event.NavigationEvents;
+import com.hyd.jfapps.zkclient.event.NodeEvents;
+import com.hyd.jfapps.zkclient.zk.ZkNode;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+
+import java.util.List;
+
+import static com.hyd.fx.app.AppEvents.fireAppEvent;
+import static com.hyd.fx.app.AppEvents.onAppEvent;
 import static com.hyd.fx.builders.MenuBuilder.contextMenu;
 import static com.hyd.fx.builders.MenuBuilder.menuItem;
 import static com.hyd.jfapps.zkclient.FxUtil.icon;
 import static de.jensd.fx.glyphs.GlyphsDude.createIconLabel;
-
-import com.hyd.fx.dialog.AlertDialog;
-import com.hyd.fx.system.ClipboardHelper;
-import com.hyd.jfapps.zkclient.event.*;
-import com.hyd.jfapps.zkclient.zk.ZkNode;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import java.util.List;
-import javafx.scene.control.*;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
 
 public class ZkNodePane extends HBox {
 
     private static ContextMenu contextMenu;
 
     static {
-        Listeners.addListener(LocationChangedEvent.class, event -> closeContextMenu());
+        onAppEvent(NavigationEvents.LocationChangedEvent.class, event -> closeContextMenu());
     }
 
     private List<String> path;
@@ -106,7 +112,7 @@ public class ZkNodePane extends HBox {
     }
 
     private void addNewNode() {
-        Listeners.publish(new AddNodeRequest(this.zkNode.getFullName()));
+        fireAppEvent(new NodeEvents.AddNodeRequest(this.zkNode.getFullName()));
     }
 
     private void deleteNode() {
@@ -115,7 +121,7 @@ public class ZkNodePane extends HBox {
             ("确定要删除节点“" + this.zkNode.getName() + "”及所有子节点吗？");
 
         if (AlertDialog.confirmYesNo("删除节点", message)) {
-            Listeners.publish(new DeleteNodeRequest(this.zkNode.getFullName()));
+            fireAppEvent(new NodeEvents.DeleteNodeRequest(this.zkNode.getFullName()));
         }
     }
 }

@@ -1,12 +1,9 @@
 package com.hyd.jfapps.zkclient.zk;
 
 import com.hyd.fx.utils.Nullable;
-import com.hyd.jfapps.zkclient.event.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import com.hyd.jfapps.zkclient.event.NavigationEvents;
+import com.hyd.jfapps.zkclient.event.NodeEvents;
+import com.hyd.jfapps.zkclient.event.ZkEvents;
 import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -16,6 +13,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static com.hyd.fx.app.AppEvents.fireAppEvent;
 
 @Slf4j
 public class ZkService {
@@ -64,7 +69,7 @@ public class ZkService {
 
     public void connect(String serverAddress, int timeoutMillis) {
         zkClient = new ZkClient(serverAddress, 3600000, timeoutMillis, new MyZkSerializer());
-        Listeners.publish(new ZkConnectedEvent());
+        fireAppEvent(new ZkEvents.ZkConnectedEvent());
     }
 
     public boolean isConnected() {
@@ -75,27 +80,27 @@ public class ZkService {
         if (zkClient != null) {
             zkClient.close();
             zkClient = null;
-            Listeners.publish(new ZkDisconnectedEvent());
+            fireAppEvent(new ZkEvents.ZkDisconnectedEvent());
         }
     }
 
     public void goInto(String path) {
         List<String> oldLocation = new ArrayList<>(this.currentLocation);
         currentLocation.add(path);
-        Listeners.publish(new LocationChangedEvent(oldLocation, currentLocation));
+        fireAppEvent(new NavigationEvents.LocationChangedEvent(oldLocation, currentLocation));
     }
 
     public void setCurrentLocation(List<String> location) {
         List<String> oldLocation = this.currentLocation;
         this.currentLocation = new ArrayList<>(location);
-        Listeners.publish(new LocationChangedEvent(oldLocation, location));
+        fireAppEvent(new NavigationEvents.LocationChangedEvent(oldLocation, location));
     }
 
     // 监视当前节点，当节点数据或子节点有变化时刷新界面
     public void watch() {
         this.zkClient.unsubscribeAll();
         this.zkClient.subscribeChildChanges(getCurrentLocationString(), (parentPath, currentChildren) -> {
-            Listeners.publish(new ChildrenChangedEvent());
+            fireAppEvent(new NodeEvents.ChildrenChangedEvent());
         });
     }
 
@@ -116,7 +121,7 @@ public class ZkService {
             (sequential ? CreateMode.PERSISTENT_SEQUENTIAL : CreateMode.PERSISTENT) :
             (sequential ? CreateMode.EPHEMERAL_SEQUENTIAL : CreateMode.EPHEMERAL);
         this.zkClient.create(path, null, createMode);
-        Listeners.publish(new LocationChangedEvent(currentLocation, currentLocation));
+        fireAppEvent(new NavigationEvents.LocationChangedEvent(currentLocation, currentLocation));
     }
 
     public void deleteNode(String nodePath) {
@@ -152,12 +157,12 @@ public class ZkService {
             @Override
             public void handleDataChange(String dataPath, Object data) throws Exception {
                 log.info("Node {} data changed: {} (is null? {})", dataPath, data, data == null);
-                Listeners.publish(new NodeDataChangedEvent(dataPath, data));
+                fireAppEvent(new NodeEvents.NodeDataChangedEvent(dataPath, data));
             }
 
             @Override
             public void handleDataDeleted(String dataPath) throws Exception {
-                Listeners.publish(new NodeDataChangedEvent(dataPath, null));
+                fireAppEvent(new NodeEvents.NodeDataChangedEvent(dataPath, null));
             }
         };
 
