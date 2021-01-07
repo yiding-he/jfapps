@@ -1,10 +1,5 @@
 package com.hyd.elasticjobclient;
 
-import static com.hyd.fx.builders.IconBuilder.icon;
-import static com.hyd.fx.builders.MenuBuilder.menuItem;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Optional;
 import com.hyd.fx.builders.ButtonBuilder;
 import com.hyd.fx.builders.MenuBuilder;
@@ -14,35 +9,30 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import io.elasticjob.lite.lifecycle.api.JobOperateAPI;
 import io.elasticjob.lite.lifecycle.internal.operate.JobOperateAPIImpl;
 import io.elasticjob.lite.reg.zookeeper.ZookeeperRegistryCenter;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static com.hyd.fx.builders.IconBuilder.icon;
+import static com.hyd.fx.builders.MenuBuilder.menuItem;
 
 @SuppressWarnings("Guava")
 public class ElasticJobPane extends VBox {
-
-    private static final Logger log = LoggerFactory.getLogger(ElasticJobPane.class);
 
     private final ZookeeperRegistryCenter registryCenter;
 
@@ -227,15 +217,13 @@ public class ElasticJobPane extends VBox {
             tableView.refresh();
 
             Job job = currentRow.getItem();
-            String configJson = registryCenter.get("/" + job.getKey() + "/config");
-            JSONObject jsonObject = JSON.parseObject(configJson);
-            jsonObject.put("jobName", job.getJobName());
-            jsonObject.put("description", job.getDescription());
-            jsonObject.put("cron", job.getCron());
-            jsonObject.put("jobParameter", job.getJobParameter());
-            jsonObject.put("shardingTotalCount", job.getShardingTotalCount());
+            String configText = registryCenter.get("/" + job.getKey() + "/config");
+            String updatedConfigText = JobParser.modifyJob(
+                    configText, job.getJobFormat(),
+                    job.getJobName(), job.getDescription(),
+                    job.getCron(), job.getJobParameter(), job.getShardingTotalCount());
 
-            registryCenter.persist("/" + job.getKey() + "/config", JSON.toJSONString(jsonObject));
+            registryCenter.persist("/" + job.getKey() + "/config", updatedConfigText);
         }
     }
 
@@ -252,13 +240,17 @@ public class ElasticJobPane extends VBox {
 
                 if (config == null) {
                     return null;
-                } else {
-                    // log.info(config);
                 }
 
-                Job job = JSON.parseObject(config, Job.class);
-                job.setKey(key);
-                job.setInstanceCount(registryCenter.getNumChildren(instancesKey));
+                Job job = null;
+                try {
+                    job = JobParser.parse(config);
+                    job.setKey(key);
+                    job.setInstanceCount(registryCenter.getNumChildren(instancesKey));
+                } catch (Exception e) {
+                    AlertDialog.error("Job配置不合法", "无法解析 Job 配置字符串",
+                            config + "\n\n" + ExceptionUtils.getStackTrace(e));
+                }
 
                 return job;
             })

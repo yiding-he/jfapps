@@ -1,13 +1,16 @@
 package com.hyd.elasticjobclient;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 @Data
 public class Job {
 
-    @JSONField(serialize = false)
+    @JsonIgnore
     private String key;
+
+    @JsonIgnore
+    private JobFormat jobFormat;
 
     private String jobName;
 
@@ -24,6 +27,12 @@ public class Job {
     private String shardingItemParameters;
 
     private boolean streamingProcess;
+
+    private boolean misfire;
+
+    private boolean failover;
+
+    private boolean monitorExecution;
 
     private String description;
 
