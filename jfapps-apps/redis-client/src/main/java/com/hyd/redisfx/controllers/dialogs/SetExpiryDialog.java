@@ -1,6 +1,6 @@
 package com.hyd.redisfx.controllers.dialogs;
 
-import com.hyd.redisfx.controllers.client.JedisManager;
+import com.hyd.redisfx.jedis.JedisManager;
 import com.hyd.redisfx.controllers.tabs.KeyTabController;
 import com.hyd.redisfx.fx.FormDialog;
 import com.hyd.redisfx.fx.IntegerSpinnerFormField;
@@ -9,7 +9,7 @@ import javafx.event.ActionEvent;
 
 import java.util.List;
 
-import static com.hyd.redisfx.controllers.client.JedisManager.withJedis;
+import static com.hyd.redisfx.jedis.JedisManager.withJedis;
 
 public class SetExpiryDialog extends FormDialog {
 

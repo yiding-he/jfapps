@@ -1,4 +1,4 @@
-package com.hyd.redisfx.controllers.client;
+package com.hyd.redisfx.jedis;
 
 import com.hyd.redisfx.App;
 import com.hyd.redisfx.conn.Connection;
@@ -52,6 +52,10 @@ public class JedisManager {
     }
 
     public static Jedis getJedis() {
+        if (jedisPool == null) {
+            return null;
+        }
+
         Jedis jedis = jedisPool.getResource();
         jedis.select(currentDatabase);
         return jedis;

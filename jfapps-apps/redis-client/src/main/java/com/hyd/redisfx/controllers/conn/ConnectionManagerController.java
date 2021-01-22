@@ -1,13 +1,13 @@
 package com.hyd.redisfx.controllers.conn;
 
+import com.hyd.fx.components.IntegerSpinner;
 import com.hyd.redisfx.App;
 import com.hyd.redisfx.Fx;
 import com.hyd.redisfx.conn.Connection;
 import com.hyd.redisfx.conn.ConnectionManager;
-import com.hyd.redisfx.controllers.client.JedisManager;
+import com.hyd.redisfx.jedis.JedisManager;
 import com.hyd.redisfx.event.EventType;
 import com.hyd.redisfx.i18n.I18n;
-import com.hyd.redisfx.nodes.IntegerSpinner;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;

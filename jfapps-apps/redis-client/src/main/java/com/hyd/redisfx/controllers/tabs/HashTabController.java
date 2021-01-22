@@ -17,7 +17,7 @@ import redis.clients.jedis.ScanResult;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.hyd.redisfx.controllers.client.JedisManager.withJedis;
+import static com.hyd.redisfx.jedis.JedisManager.withJedis;
 
 @TabName("Hash")
 public class HashTabController extends AbstractTabController {

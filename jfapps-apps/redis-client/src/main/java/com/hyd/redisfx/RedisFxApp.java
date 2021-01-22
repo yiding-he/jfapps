@@ -5,7 +5,7 @@ import com.hyd.jfapps.appbase.AppInfo;
 import com.hyd.jfapps.appbase.JfappsApp;
 import com.hyd.jfapps.appbase.JfappsAppLauncher;
 import com.hyd.redisfx.controllers.MainController;
-import com.hyd.redisfx.controllers.client.JedisManager;
+import com.hyd.redisfx.jedis.JedisManager;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;

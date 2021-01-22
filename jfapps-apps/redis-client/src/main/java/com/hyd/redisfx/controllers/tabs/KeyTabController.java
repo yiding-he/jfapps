@@ -4,7 +4,7 @@ import com.hyd.fx.NodeUtils;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.redisfx.App;
 import com.hyd.redisfx.Fx;
-import com.hyd.redisfx.controllers.client.JedisManager;
+import com.hyd.redisfx.jedis.JedisManager;
 import com.hyd.redisfx.controllers.dialogs.SetExpiryDialog;
 import com.hyd.redisfx.event.EventType;
 import com.hyd.redisfx.i18n.I18n;
@@ -90,7 +90,8 @@ public class KeyTabController extends AbstractTabController {
         this.txtKeyPattern.setOnAction(event -> this.listKeys());
 
         Fx.nodeOnKeyPress(this.tblKeys, Fx.CTRL_C, this::mnuCopyKey);
-        App.getEventBus().on(EventType.DatabaseChanged, event -> reset());
+        App.getEventBus().on(EventType.DatabaseChanged, event -> listKeys());
+        App.getEventBus().on(EventType.ConnectionOpened, event -> listKeys());
     }
 
     private void reset() {
@@ -170,6 +171,10 @@ public class KeyTabController extends AbstractTabController {
 
     private void runSearch(String pattern, int limit, ObservableList<KeyItem> items) {
         try (Jedis jedis = JedisManager.getJedis()) {
+            if (jedis == null) {
+                return;
+            }
+
             String cursor = ScanParams.SCAN_POINTER_START;
             ScanParams scanParams = new ScanParams().match(pattern).count(200);
             ScanResult<String> result;

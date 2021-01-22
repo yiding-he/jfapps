@@ -2,7 +2,7 @@ package com.hyd.redisfx.controllers;
 
 import com.hyd.redisfx.App;
 import com.hyd.redisfx.Fx;
-import com.hyd.redisfx.controllers.client.JedisManager;
+import com.hyd.redisfx.jedis.JedisManager;
 import com.hyd.redisfx.controllers.dialogs.ChangeDatabaseDialog;
 import com.hyd.redisfx.controllers.tabs.AbstractTabController;
 import com.hyd.redisfx.controllers.tabs.Tabs;
@@ -11,7 +11,6 @@ import com.hyd.redisfx.i18n.I18n;
 import javafx.event.ActionEvent;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;

@@ -1,8 +1,8 @@
 package com.hyd.redisfx.controllers.tabs;
 
-import com.hyd.redisfx.controllers.client.JedisManager;
+import com.hyd.fx.components.DoubleSpinner;
+import com.hyd.redisfx.jedis.JedisManager;
 import com.hyd.redisfx.i18n.I18n;
-import com.hyd.redisfx.nodes.DoubleSpinner;
 import javafx.scene.control.*;
 
 @TabName("String")
