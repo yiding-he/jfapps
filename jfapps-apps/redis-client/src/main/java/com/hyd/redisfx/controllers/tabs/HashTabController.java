@@ -133,10 +133,10 @@ public class HashTabController extends AbstractTabController {
 
             do {
                 scanResult = jedis.hscan(key, cursor, scanParams);
-                scanResult.getResult().forEach(entry -> {
-                    items.add(new HashItem(entry.getKey(), entry.getValue()));
-                });
-                cursor = scanResult.getStringCursor();
+                scanResult.getResult().forEach(
+                    entry -> items.add(new HashItem(entry.getKey(), entry.getValue()))
+                );
+                cursor = scanResult.getCursor();
             } while (!scanResult.isCompleteIteration());
         });
     }

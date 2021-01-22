@@ -1,7 +1,6 @@
 package com.hyd.redisfx.controllers.tabs;
 
 import com.hyd.fx.NodeUtils;
-import com.hyd.fx.app.AppThread;
 import com.hyd.fx.concurrency.BackgroundTask;
 import com.hyd.redisfx.App;
 import com.hyd.redisfx.Fx;
@@ -20,7 +19,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
@@ -31,7 +29,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -182,7 +179,7 @@ public class KeyTabController extends AbstractTabController {
                 }
 
                 result = jedis.scan(cursor, scanParams);
-                cursor = result.getStringCursor();
+                cursor = result.getCursor();
 
                 for (String key : result.getResult()) {
                     String type = jedis.type(key);

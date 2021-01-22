@@ -100,19 +100,19 @@ public class JedisManager {
         Proxy proxy = null;
 
         if (isNotBlank(connection.getProxyType()) &&
-                isNotBlank(connection.getProxyHost()) &&
-                connection.getProxyPort() > 0) {
+            isNotBlank(connection.getProxyHost()) &&
+            connection.getProxyPort() > 0) {
             proxy = new Proxy(
-                    Proxy.Type.valueOf(connection.getProxyType()),
-                    new InetSocketAddress(connection.getProxyHost(), connection.getProxyPort())
+                Proxy.Type.valueOf(connection.getProxyType()),
+                new InetSocketAddress(connection.getProxyHost(), connection.getProxyPort())
             );
         }
 
         return createJedisPool(
-                connection.getHost(),
-                connection.getPort(),
-                connection.getPassphase(),
-                proxy
+            connection.getHost(),
+            connection.getPort(),
+            connection.getPassphase(),
+            proxy
         );
     }
 
@@ -127,14 +127,14 @@ public class JedisManager {
      * @return a JedisPool instance
      */
     public static JedisPool createJedisPool(
-            String host, Integer port, String passphase, Proxy proxy) {
+        String host, Integer port, String passphase, Proxy proxy) {
 
         GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
 
         if (!StringUtils.isBlank(passphase)) {
-            return JedisPool.withProxy(poolConfig, host, port, DEFAULT_TIMEOUT, passphase, proxy);
+            return new JedisPool(poolConfig, host, port, DEFAULT_TIMEOUT, passphase, proxy);
         } else {
-            return JedisPool.withProxy(poolConfig, host, port, DEFAULT_TIMEOUT, proxy);
+            return new JedisPool(poolConfig, host, port, DEFAULT_TIMEOUT, proxy);
         }
     }
 }
