@@ -265,6 +265,8 @@ public class ZookeeperToolController {
 
         BackgroundTask.runTask(() -> {
             List<ZkNode> children = service.listChildren();
+            List<ZkNodePane> nodePanes = new ArrayList<>();
+
             children.forEach(item -> {
                 nodeCounter.incrementAndGet();
                 ZkNodePane zkNodePane = new ZkNodePane(service.getCurrentLocation(), item);
@@ -275,11 +277,11 @@ public class ZookeeperToolController {
                         service.goInto(item.getName());
                     }
                 });
-                runUIThread(() -> {
-                    NodeUtils.setManaged(zkNodePane);
-                    fpChildNodes.getChildren().add(zkNodePane);
-                });
+                NodeUtils.setManaged(zkNodePane);
+                nodePanes.add(zkNodePane);
             });
+
+            runUIThread(() -> fpChildNodes.getChildren().setAll(nodePanes));
 
         }).whenTaskFail(e -> {
             AlertDialog.error("打开节点失败", e);
