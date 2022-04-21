@@ -51,7 +51,7 @@
             <Label text="%dlg_conn_lbl_host"/>
             <TextField fx:id="txtHost" HBox.hgrow="ALWAYS"/>
             <Label text="%dlg_conn_lbl_port"/>
-            <IntegerSpinner fx:id="spnPort" prefWidth="80"/>
+            <IntegerSpinner fx:id="spnPort" prefWidth="80" editable="true"/>
           </HBox>
           <HBox alignment="BASELINE_LEFT" spacing="10">
             <Label text="%dlg_conn_lbl_pass"/>
@@ -61,7 +61,7 @@
             <Label text="%dlg_conn_lbl_proxy_host"/>
             <TextField fx:id="txtProxyHost" HBox.hgrow="ALWAYS"/>
             <Label text="%dlg_conn_lbl_proxy_port"/>
-            <IntegerSpinner fx:id="spnProxyPort" prefWidth="80"/>
+            <IntegerSpinner fx:id="spnProxyPort" prefWidth="80" editable="true"/>
           </HBox>
           <HBox alignment="BASELINE_LEFT" spacing="10">
             <Button fx:id="btnTest" disable="true" onAction="#testClicked" text="%op_test">
